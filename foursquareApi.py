@@ -9,8 +9,6 @@ Guess the location game server-side Python App Engine
 """
 import requests
 import requests_toolbelt.adapters.appengine
-# import urllib
-# import urllib2
 import json
 import random
 

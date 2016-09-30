@@ -18,6 +18,10 @@ handlers:
 - url: /templates
   static_dir: templates
 
+- url: /jobs/build_city_data
+  script: main.app
+  login: admin
+
 - url: /_ah/spi/.*
   script: api.api
 
@@ -36,8 +40,8 @@ libraries:
 - name: pycrypto
   version: latest
 
-- name: requests
-  version: 2.11.1
+# - name: requests
+#   version: 2.11.1
 
-- name: requests_toolbelt
-  version: 0.7.0
+# - name: requests_toolbelt
+#   version: 0.7.0

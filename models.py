@@ -49,3 +49,34 @@ class User(ndb.Model):
     """User profile"""
     name = ndb.StringProperty(required=True)
     email = ndb.StringProperty()
+
+
+class City(ndb.Model):
+    """City information """
+    city_name = ndb.StringProperty(required=True)
+    country = ndb.StringProperty()
+    region = ndb.StringProperty()
+
+    @classmethod
+    def get_city(cls, city_name, country, region):
+        city = City.query()
+        city = city.filter(City.city_name == city_name)
+        city = city.filter(City.country == country)
+        city = city.filter(City.region == region)
+
+        return city.get()
+
+    @classmethod
+    def add_city(cls, city_name, country, region):
+        city = City.get_city(city_name, country, region)
+
+        if not city:
+            print 'New city!'
+            city = City(
+                city_name=city_name,
+                country=country,
+                region=region
+            )
+            city.put()
+
+        return city
