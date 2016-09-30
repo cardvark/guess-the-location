@@ -8,10 +8,15 @@ Guess the location game server-side Python App Engine
 
 """
 import requests
+import requests_toolbelt.adapters.appengine
+# import urllib
+# import urllib2
+import json
 import random
 
 from settings import FOURSQUARE_CLIENT_ID, FOURSQUARE_CLIENT_SECRET
 
+requests_toolbelt.adapters.appengine.monkeypatch()
 
 def get_url_from_id(venue_id):
     print 'Getting url for ' + venue_id
@@ -21,6 +26,15 @@ def get_url_from_id(venue_id):
         'client_secret': FOURSQUARE_CLIENT_SECRET,
         'v': '20130815'
     }
+    # query_params = urllib.urlencode(params)
+
+    # try:
+    #     response = urllib2.urlopen(api_url, query_params)
+    # except urllib2.URLError:
+    #     print 'Caught exception fetching get_url_from_id'
+    #     return
+
+    # response = json.load(response)
 
     try:
         response = requests.get(api_url, params=params)
@@ -42,8 +56,16 @@ def monuments_by_city(city):
         'venuePhotos': 1,
         'v': '20130815'
     }
+    # query_params = urllib.urlencode(params)
 
     # Get call to Foursquare API
+    # try:
+    #     response = urllib2.Request(api_url, query_params)
+    # except urllib2.URLError:
+    #     print 'Caught exception fetching monuments_by_city'
+    #     return
+
+    # response = json.load(response)
     try:
         response = requests.get(api_url, params=params)
     except requests.exceptions.RequestException as e:

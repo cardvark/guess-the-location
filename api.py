@@ -13,7 +13,7 @@ from google.appengine.api import memcache
 from google.appengine.api import taskqueue
 
 import foursquareApi as fApi
-import models
+from models import User
 import forms
 from settings import *
 
@@ -32,7 +32,7 @@ class GuessLocationApi(remote.Service):
 
     @endpoints.method(
         request_message=forms.user_form,
-        response_message=StringMessage,
+        response_message=forms.user_form,
         path='user',
         name='create_user',
         http_method='POST'
@@ -49,7 +49,7 @@ class GuessLocationApi(remote.Service):
         )
         user.put()
 
-        return StringMessage(message='User {} created!'.format(request.user_name))
+        return forms.user_form(user_name=user.name, email=user.email)
 
 
 api = endpoints.api_server([GuessLocationApi])
