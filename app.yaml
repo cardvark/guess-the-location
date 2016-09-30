@@ -1,0 +1,39 @@
+# application: guess-the-location
+# version: 1
+runtime: python27
+api_version: 1
+threadsafe: yes
+
+handlers:
+- url: /favicon\.ico
+  static_files: favicon.ico
+  upload: favicon\.ico
+
+- url: /js
+  static_dir: static/js
+
+- url: /css
+  static_dir: static/css
+
+- url: /templates
+  static_dir: templates
+
+- url: /
+  static_files: templates/index.html
+  upload: templates/index\.html
+  secure: always
+
+- url: /_ah/spi/.*
+  script: api.api
+
+libraries:
+- name: webapp2
+  version: "2.5.2"
+
+- name: endpoints
+  version: latest
+
+- name: pycrypto
+  version: latest
+
+

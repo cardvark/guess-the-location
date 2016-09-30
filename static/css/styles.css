@@ -1,0 +1,16 @@
+.container-fluid {
+    height: 100%;
+}
+
+.main-row {
+    height: 100%;
+}
+
+.map-col {
+    height: 100%;
+}
+
+#map {
+    min-height: 500px;
+    height: 100%;
+}
