@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
 
-"""settings.py
+"""
+
+settings.py - ID constants.
 
 Guess the location game server-side Python App Engine
 
