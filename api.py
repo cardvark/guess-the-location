@@ -4,6 +4,7 @@ from protorpc import remote, messages
 from google.appengine.api import memcache
 from google.appengine.api import taskqueue
 
+from logic import monuments_by_city
 from models import *
 from settings import *
 from forms import *
