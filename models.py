@@ -15,25 +15,25 @@ from google.appengine.ext import ndb
 # Might move this list to that function.
 CITIES_LIST = [
     ['Hong Kong', 'China', 'Asia'],
-    ['London', 'United Kingdom', 'Europe'],
     ['Singapore', 'Singapore', 'Asia'],
     ['Bangkok', 'Thailand', 'Asia'],
-    ['Paris', 'France', 'Europe'],
     ['Shenzhen', 'China', 'Asia'],
-    ['New York City', 'United States', 'North America'],
     ['Seoul', 'South Korea', 'Asia'],
-    ['Rome', 'Italy', 'Europe'],
     ['Taipei', 'Taiwan', 'Asia'],
-    ['Miami', 'United States', 'North America'],
     ['Shanghai', 'China', 'Asia'],
-    ['Las Vegas', 'United States', 'North America'],
     ['Tokyo', 'Japan', 'Asia'],
+    ['Beijing', 'China', 'Asia'],
+    ['London', 'United Kingdom', 'Europe'],
+    ['Paris', 'France', 'Europe'],
+    ['Rome', 'Italy', 'Europe'],
     ['Barcelona', 'Spain', 'Europe'],
     ['Amsterdam', 'Netherlands', 'Europe'],
-    ['Los Angeles', 'United States', 'North America'],
     ['Venice', 'Italy', 'Europe'],
+    ['New York City', 'United States', 'North America'],
+    ['Miami', 'United States', 'North America'],
+    ['Las Vegas', 'United States', 'North America'],
+    ['Los Angeles', 'United States', 'North America'],
     ['Orlando', 'United States', 'North America'],
-    ['Beijing', 'China', 'Asia'],
     ['San Francisco', 'United States', 'North America'],
     ['Vancouver', 'Canada', 'North America'],
     ['Boston', 'United States', 'North America'],
@@ -59,6 +59,7 @@ class City(ndb.Model):
 
     @classmethod
     def get_city(cls, city_name, country, region):
+        """Queries and returns city entity"""
         city = City.query()
         city = city.filter(City.city_name == city_name)
         city = city.filter(City.country == country)
@@ -68,6 +69,7 @@ class City(ndb.Model):
 
     @classmethod
     def add_city(cls, city_name, country, region):
+        """Adds new city entity, unless already exists"""
         city = City.get_city(city_name, country, region)
 
         if not city:
@@ -80,3 +82,46 @@ class City(ndb.Model):
             city.put()
 
         return city
+
+
+class Monument(ndb.Model):
+    """Monument information"""
+    fsq_id = ndb.StringProperty()
+    name = ndb.StringProperty()
+    lat = ndb.FloatProperty()
+    lng = ndb.FloatProperty()
+    url = ndb.StringProperty()
+    img_prefix = ndb.StringProperty()
+    img_suffix = ndb.StringProperty()
+
+    @classmethod
+    def get_monument(cls, fsq_id):
+        m_key = ndb.Key(Monument, fsq_id)
+
+        return m_key.get()
+
+    @classmethod
+    def add_monument(cls, monument_dict):
+        fsq_id = monument_dict.get('fsq_id')
+        monument = Monument.get_monument(fsq_id)
+
+        if not monument:
+            m_key = ndb.Key(Monument, fsq_id)
+            monument = Monument(
+                key=m_key,
+                fsq_id=fsq_id,
+                name=monument_dict.get('name'),
+                lat=monument_dict.get('lat'),
+                lng=monument_dict.get('lng'),
+                url=monument_dict.get('url'),
+                img_prefix=monument_dict.get('img_prefix'),
+                img_suffix=monument_dict.get('img_suffix')
+            )
+        else:
+            print 'exists! updating'
+            for prop, val in monument_dict.iteritems():
+                monument.prop = val
+
+        monument.put()
+
+        return monument

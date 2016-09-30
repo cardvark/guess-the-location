@@ -80,9 +80,14 @@ def monuments_by_city(city):
     output_list = []
     for monument in monuments_list:
         monument_venue = monument.get('venue')
+        image = True
 
-        img_prefix = monument_venue.get('featuredPhotos').get('items')[0].get('prefix')
-        img_suffix = monument_venue.get('featuredPhotos').get('items')[0].get('suffix')
+        try:
+            img_prefix = monument_venue.get('featuredPhotos').get('items')[0].get('prefix')
+            img_suffix = monument_venue.get('featuredPhotos').get('items')[0].get('suffix')
+        except:
+            image = False
+
         page_id = monument_venue.get('id')
         page_url = monument.get('tips')
 
@@ -94,16 +99,16 @@ def monuments_by_city(city):
         else:
             page_url = get_url_from_id(page_id)
 
-        monument_dict = {
-            'id': page_id,
-            'name': monument_venue.get('name'),
-            'lat': monument_venue.get('location').get('lat'),
-            'lng': monument_venue.get('location').get('lng'),
-            'url': page_url,
-            'img_prefix': img_prefix,
-            'img_suffix': img_suffix
-        }
-
-        output_list.append(monument_dict)
+        if image:
+            monument_dict = {
+                'fsq_id': page_id,
+                'name': monument_venue.get('name'),
+                'lat': monument_venue.get('location').get('lat'),
+                'lng': monument_venue.get('location').get('lng'),
+                'url': page_url,
+                'img_prefix': img_prefix,
+                'img_suffix': img_suffix
+            }
+            output_list.append(monument_dict)
 
     return output_list

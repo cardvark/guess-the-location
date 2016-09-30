@@ -14,11 +14,15 @@ from google.appengine.api import taskqueue
 
 import foursquareApi as fApi
 from models import User
+from utils import get_by_urlsafe
 import forms
 from settings import *
 
 EMAIL_SCOPE = endpoints.EMAIL_SCOPE
 API_EXPLORER_CLIENT_ID = endpoints.API_EXPLORER_CLIENT_ID
+
+# TODO: Monument ndb and form.
+# TODO: main.py handler to cycle through cities list and fill Monument datastore.
 
 
 @endpoints.api(
