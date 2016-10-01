@@ -87,6 +87,7 @@ def monuments_by_city(city):
             img_suffix = monument_venue.get('featuredPhotos').get('items')[0].get('suffix')
         except:
             image = False
+            print 'No image, skipping ' + monument_venue.get('name')
 
         page_id = monument_venue.get('id')
         page_url = monument.get('tips')
@@ -94,12 +95,14 @@ def monuments_by_city(city):
         # 'tips' only exist if user posted a tip.
         # Without a tip, page url isn't listed in explore response.
         # Must do a specific page request to obtain the 'canonicalUrl'
-        if page_url:
-            page_url = page_url[0].get('canonicalUrl')
-        else:
-            page_url = get_url_from_id(page_id)
 
         if image:
+
+            if page_url:
+                page_url = page_url[0].get('canonicalUrl')
+            else:
+                page_url = get_url_from_id(page_id)
+
             monument_dict = {
                 'fsq_id': page_id,
                 'name': monument_venue.get('name'),

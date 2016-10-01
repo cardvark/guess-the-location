@@ -57,6 +57,8 @@ class City(ndb.Model):
     country = ndb.StringProperty()
     region = ndb.StringProperty()
 
+    # classmethod - get list of cities, allow list of regions to filter by.
+
     @classmethod
     def get_city(cls, city_name, country, region):
         """Queries and returns city entity"""
@@ -83,6 +85,10 @@ class City(ndb.Model):
 
         return city
 
+    def get_monuments(self):
+        monuments = Monument.query(ancestor=self.key).fetch()
+        return monuments
+
 
 class Monument(ndb.Model):
     """Monument information"""
@@ -101,12 +107,12 @@ class Monument(ndb.Model):
         return m_key.get()
 
     @classmethod
-    def add_monument(cls, monument_dict):
+    def add_monument(cls, monument_dict, parent_key):
         fsq_id = monument_dict.get('fsq_id')
         monument = Monument.get_monument(fsq_id)
 
         if not monument:
-            m_key = ndb.Key(Monument, fsq_id)
+            m_key = ndb.Key(Monument, fsq_id, parent=parent_key)
             monument = Monument(
                 key=m_key,
                 fsq_id=fsq_id,

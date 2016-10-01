@@ -29,28 +29,50 @@ sys.setdefaultencoding('utf-8')
 class BuildCityDataHandler(webapp2.RequestHandler):
     def get(self):
         """Builds the datastore City entities"""
+        # NOTE: temporarily commenting out this code.
 
-        ndb.delete_multi(City.query().fetch(keys_only=True))
+        # ndb.delete_multi(City.query().fetch(keys_only=True))
 
-        for city_list in CITIES_LIST:
-            City.add_city(city_list[0], city_list[1], city_list[2])
+        # for city_list in CITIES_LIST:
+        #     City.add_city(city_list[0], city_list[1], city_list[2])
 
-        # return 'Done'
+
+        # Get by ancestor works!
+        # city = City.get_city('San Francisco', 'United States', 'North America')
+
+        # monuments = city.get_monuments()
+        # # print monuments
+        # for monument in monuments:
+        #     print monument.name
 
 
 class BuildMonumentsDataHandler(webapp2.RequestHandler):
     def get(self):
         """Builds Monument entities via Foursquare API"""
+        # TODO: add ancestor link to city for monuments.
+        # update this script to include that info.
+        # need to do some double checking on how it works.
 
-        cities_list = City.query().fetch(projection=[City.city_name])
-        for city in cities_list:
-            print city.city_name
+        # ndb.delete_multi(Monument.query().fetch(keys_only=True))
 
-            monuments_list = fApi.monuments_by_city(city.city_name)
+        # cities_list = City.query().fetch()
+        # for city in cities_list:
+        #     print '------------------------------------------------------'
+        #     print city.city_name
 
-            for monument in monuments_list:
-                mon = Monument.add_monument(monument)
-                print city.city_name, mon.name
+        #     monuments_list = fApi.monuments_by_city(city.city_name)
+
+        #     for monument in monuments_list:
+        #         mon = Monument.add_monument(monument, city.key)
+        #         print city.city_name, mon.name
+
+        city_entity = City.get_city('San Francisco', 'United States', 'North America')
+
+        monuments_list = fApi.monuments_by_city(city_entity.city_name)
+
+        for monument in monuments_list:
+            mon = Monument.add_monument(monument, city_entity.key)
+            # print city.city_name, mon.name
 
 
 app = webapp2.WSGIApplication([
