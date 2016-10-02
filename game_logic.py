@@ -13,4 +13,16 @@ Thoughts:
 - pseudo-randomization for cities to choose.  Keep a list of 3 most recent cities, don't allow a choice to be of one of those three.
 -
 
+Rules:
+- A game can have a variable number of city questions, max 5
+- Choose the region(s) you want cities from.
+- You have 3 tries to answer a City Question.  Information is increased with each incorrect guess.
+    - 1) Roads, min zoom: 16 (0)
+    - 2) Marker and image, min zoom 12 (1)
+    - 3) Monument name, min zoom out 6 (2)
+- If failed, set zoom to 4 and city name.
+- Score is based on how many tries.  10, 6, 2, 0.
+
 """
+
+

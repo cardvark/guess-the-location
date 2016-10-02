@@ -52,7 +52,7 @@ class User(ndb.Model):
 
 
 class City(ndb.Model):
-    """City information """
+    """City object """
     city_name = ndb.StringProperty(required=True)
     country = ndb.StringProperty()
     region = ndb.StringProperty()
@@ -91,7 +91,10 @@ class City(ndb.Model):
 
 
 class Monument(ndb.Model):
-    """Monument information"""
+    """Monument object
+    - Always built with City parent
+
+    """
     fsq_id = ndb.StringProperty()
     name = ndb.StringProperty()
     lat = ndb.FloatProperty()
@@ -131,3 +134,19 @@ class Monument(ndb.Model):
         monument.put()
 
         return monument
+
+
+class Game(ndb.Model):
+    """Game object"""
+    user = ndb.KeyProperty(required=True, kind='User')
+    game_over = ndb.BooleanProperty(required=True, default=False)
+    regions = ndb.StringProperty(repeated=True)
+    last_cities = ndb.StringProperty(repeated=True)
+    cities_remaining = ndb.IntegerProperty(required=True)
+
+
+class CityQuestion(ndb.Model):
+    """City question object
+    - Always built w/ Game parent.
+
+    """
