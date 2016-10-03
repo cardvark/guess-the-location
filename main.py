@@ -74,12 +74,14 @@ class PlayGroundHandler(webapp2.RequestHandler):
         """General testing ground"""
         # print models.City.get_available_regions()
 
-        game = utils.get_by_urlsafe('aghkZXZ-Tm9uZXIRCxIER2FtZRiAgICAgODXCAw', models.Game)
+        game = utils.get_by_urlsafe('aghkZXZ-Tm9uZXIRCxIER2FtZRiAgICAgODXCgw', models.Game)
 
-        print game.last_cities
-        print game.monuments_list
+        # print game.last_cities
+        # print game.monuments_list
 
-        # monument_key = gl.get_new_city_question(game)
+        new_city_question = gl.get_new_city_question(game)
+        print new_city_question
+        print new_city_question.city_name, new_city_question.monument.get().name
         # print monument_key
 
         # print game

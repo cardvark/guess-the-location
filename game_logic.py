@@ -87,8 +87,9 @@ def get_new_city_question(game):
 
     # Create new city question
     new_city_question = models.CityQuestion.new_city_question(
+        game.key,
         new_city_key.get().city_name,
-        new_monument_key.get().name,
+        new_monument_key,
         QUESTION_ATTEMPTS
     )
 
