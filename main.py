@@ -19,6 +19,7 @@ from google.appengine.api import mail
 from api import GuessLocationApi
 import models
 import foursquareApi as fApi
+import utils
 from google.appengine.ext import ndb
 
 reload(sys)
@@ -69,8 +70,12 @@ class BuildMonumentsDataHandler(webapp2.RequestHandler):
 class PlayGroundHandler(webapp2.RequestHandler):
     def get(self):
         """General testing ground"""
-        print models.City.get_available_regions()
-
+        # print models.City.get_available_regions()
+        game = utils.get_by_urlsafe('aghkZXZ-Tm9uZXIRCxIER2FtZRiAgICAgOCXCgw', models.Game)
+        print game
+        # print game.cities_total
+        # print game.user
+        # print game.regions
 
 
 app = webapp2.WSGIApplication([

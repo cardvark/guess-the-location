@@ -161,10 +161,10 @@ class Monument(ndb.Model):
 class Game(ndb.Model):
     """Game object"""
     user = ndb.KeyProperty(required=True, kind='User')
-    game_over = ndb.BooleanProperty(required=True, default=False)
+    game_over = ndb.BooleanProperty(default=False)
     regions = ndb.StringProperty(repeated=True)
     last_cities = ndb.StringProperty(repeated=True)
-    cities_total = ndb.IntegerProperty()
+    cities_total = ndb.IntegerProperty(required=True, default=5)
     cities_remaining = ndb.IntegerProperty()
     active_question = ndb.KeyProperty(kind='CityQuestion')
 
@@ -192,8 +192,8 @@ class Game(ndb.Model):
         return game
 
     def to_form(self, message):
-        """Returns a Game_Form representation of the Game"""
-        form = forms.Game_Form()
+        """Returns a GameForm representation of the Game"""
+        form = forms.GameForm()
         form.urlsafe_key = self.key.urlsafe()
         form.cities_total = self.cities_total
         form.user = self.user.get().name
@@ -206,8 +206,12 @@ class CityQuestion(ndb.Model):
     - Always built w/ Game parent.
 
     """
-    city = ndb.KeyProperty(required=True, kind='City')
+    city_name = ndb.StringProperty()
     monument = ndb.KeyProperty(required=True, kind='Monument')
-    attempts_allowed = ndb.IntegerProperty()
+    attempts_allowed = ndb.IntegerProperty(required=True)
     attempts_remaining = ndb.IntegerProperty()
     question_over = ndb.BooleanProperty(default=False)
+
+    @classmethod
+    def new_city_question(cls, ):
+        pass

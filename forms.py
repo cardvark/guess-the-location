@@ -11,28 +11,29 @@ Guess the location game server-side Python App Engine
 from protorpc import messages
 
 
-class User_Form(messages.Message):
-    """User_Form -- create new users"""
+class UserForm(messages.Message):
+    """UserForm -- create new users"""
     user_name = messages.StringField(1)
     email = messages.StringField(2)
 
 
-class New_Game_Form(messages.Message):
+class NewGameForm(messages.Message):
     user = messages.StringField(1)
     regions = messages.StringField(2, repeated=True)
     cities_total = messages.IntegerField(3)
 
 
-class Game_Form(messages.Message):
+class GameForm(messages.Message):
     urlsafe_key = messages.StringField(1)
     cities_total = messages.IntegerField(2)
     user = messages.StringField(3)
     message = messages.StringField(4)
 
+# potentially deprecated.
+# class NewCityQuestionForm(messages.Message):
+#     """NewCityQuestionForm -- request requirements for new city question"""
 
-# Deprecated for now.
-# class city_form(messages.Message):
-#     """city_form - provide city information"""
-#     city_name = messages.StringField(1)
-#     country = messages.StringField(2)
-#     region = messages.StringField(3)
+
+class CityQuestionForm(messages.Message):
+    """CityQuestionForm -- response form"""
+    # TODO
