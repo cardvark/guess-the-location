@@ -37,6 +37,10 @@ SCORE_DICT = {
 
 RECENT_CITIES_LIMIT = 3
 MAX_CITY_QUESTIONS = 5
+QUESTION_ATTEMPTS = 3
+
+
+# TODO: pass to user map and info parameters based on # of tries / attempts remaining.
 
 
 def update_recent_cities(new_city_key, recent_cities):
@@ -71,26 +75,31 @@ def get_new_city_question(game):
     if game_over_status:
         raise endpoints.BadRequestException('Game is already over!  Pick another.')
 
-    # Choose a new city.
+    # Get a new city.
     possible_cities = models.City.get_cities_by_regions(game.regions)
     new_city_key = get_unique_random(recent_cities, possible_cities)
     recent_cities = update_recent_cities(new_city_key.urlsafe(), recent_cities)
 
-    # Choose a monument.
+    # Get a monument.
     monuments_list = new_city_key.get().get_monuments()
     new_monument_key = get_unique_random(previous_monuments, monuments_list)
     previous_monuments.append(new_monument_key.urlsafe())
 
-    # Update this game's data
+    # Create new city question
+    new_city_question = models.CityQuestion.new_city_question(
+        new_city_key.get().city_name,
+        new_monument_key.get().name,
+        QUESTION_ATTEMPTS
+    )
+
+    # Update the game's data
     game.last_cities = recent_cities
     game.cities_asked = cities_asked + 1
     game.monuments_list = previous_monuments
-
-    if game.cities_asked >= MAX_CITY_QUESTIONS:
-        game.game_over = True
+    game.active_question = new_city_question.key
 
     print new_city_key.get().city_name
     print new_monument_key.get().name
     game.put()
 
-    return new_monument_key
+    return new_city_question

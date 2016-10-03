@@ -231,5 +231,12 @@ class CityQuestion(ndb.Model):
     question_over = ndb.BooleanProperty(default=False)
 
     @classmethod
-    def new_city_question(cls, city_name, monumet_key, attempts_allowed):
-        pass
+    def new_city_question(cls, city_name, monument_key, attempts_allowed):
+        new_question = cls(
+            city_name=city_name,
+            monument=monument_key,
+            attempts_allowed=attempts_allowed,
+            attempts_remaining=attempts_allowed
+        )
+        new_question.put()
+        return new_question

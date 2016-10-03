@@ -63,6 +63,9 @@ class GuessLocationApi(remote.Service):
 
         return game.to_form('New game created.  Best of luck!')
 
+    # TODO: maybe deprecate this in favor a of a "next_move" options.
+    # next_move should determine whether to create new question.
+    # Alt, it could be 'get question' - either gets current active, or creates new.
     @endpoints.method(
         request_message=NEW_QUESTION_REQUEST,
         response_message=forms.CityQuestionForm,
@@ -73,11 +76,13 @@ class GuessLocationApi(remote.Service):
     def new_question(self, request):
         game = utils.get_by_urlsafe(request.websafe_game_key, models.Game)
 
+        if game.cities_asked >= gl.MAX_CITY_QUESTIONS:
+            return game.to_form('Already generated max questions for this game!')
+
         if game.game_over:
-            return game.to_form('Game already over!  Try another.')
+            return game.to_form('Game is already over!  Try another one!')
 
         new_city_question = gl.get_new_city_question(game)
-        # TODO
 
 
 api = endpoints.api_server([GuessLocationApi])
