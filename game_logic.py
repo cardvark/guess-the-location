@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 """
-
 game_logic.py - game logic functions
 
 Guess the location game server-side Python App Engine
@@ -25,6 +24,10 @@ Rules:
 
 """
 
+import models
+import random
+import endpoints
+
 SCORE_DICT = {
     3: 10,
     2: 5,
@@ -32,7 +35,62 @@ SCORE_DICT = {
     0: 0
 }
 
+RECENT_CITIES_LIMIT = 3
+MAX_CITY_QUESTIONS = 5
+
+
+def update_recent_cities(new_city_key, recent_cities):
+    recent_cities.append(new_city_key)
+
+    if len(recent_cities) >= RECENT_CITIES_LIMIT:
+        recent_cities = recent_cities[-RECENT_CITIES_LIMIT:]
+
+    return recent_cities
+
+
+def get_unique_random(prev_list, possible_list):
+    found = False
+
+    while not found:
+        new_item = random.choice(possible_list)
+        new_item_key = new_item.key
+
+        if new_item_key not in prev_list:
+            found = True
+
+    return new_item_key
+
 
 def get_new_city_question(game):
-    # TODO
-    pass
+    # Gather game object data.
+    cities_asked = game.cities_asked
+    recent_cities = game.last_cities
+    game_over_status = game.game_over
+    previous_monuments = game.monuments_list
+
+    if game_over_status:
+        raise endpoints.BadRequestException('Game is already over!  Pick another.')
+
+    # Choose a new city.
+    possible_cities = models.City.get_cities_by_regions(game.regions)
+    new_city_key = get_unique_random(recent_cities, possible_cities)
+    recent_cities = update_recent_cities(new_city_key.urlsafe(), recent_cities)
+
+    # Choose a monument.
+    monuments_list = new_city_key.get().get_monuments()
+    new_monument_key = get_unique_random(previous_monuments, monuments_list)
+    previous_monuments.append(new_monument_key.urlsafe())
+
+    # Update this game's data
+    game.last_cities = recent_cities
+    game.cities_asked = cities_asked + 1
+    game.monuments_list = previous_monuments
+
+    if game.cities_asked >= MAX_CITY_QUESTIONS:
+        game.game_over = True
+
+    print new_city_key.get().city_name
+    print new_monument_key.get().name
+    game.put()
+
+    return new_monument_key

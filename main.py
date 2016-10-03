@@ -20,7 +20,9 @@ from api import GuessLocationApi
 import models
 import foursquareApi as fApi
 import utils
+import game_logic as gl
 from google.appengine.ext import ndb
+import random
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -72,15 +74,24 @@ class PlayGroundHandler(webapp2.RequestHandler):
         """General testing ground"""
         # print models.City.get_available_regions()
 
+        game = utils.get_by_urlsafe('aghkZXZ-Tm9uZXIRCxIER2FtZRiAgICAgODXCAw', models.Game)
 
-        # game = utils.get_by_urlsafe('aghkZXZ-Tm9uZXIRCxIER2FtZRiAgICAgOCXCgw', models.Game)
+        print game.last_cities
+        print game.monuments_list
+
+        # monument_key = gl.get_new_city_question(game)
+        # print monument_key
+
         # print game
         # print game.cities_total
         # print game.user
         # print game.regions
 
 
-        # cities = models.City.get_cities_by_regions(['Asia'])
+        # cities = models.City.get_cities_by_regions(['Asia', 'North America', 'Europe'])
+
+        # city = random.choice(cities)
+        # print city.key, city.city_name
 
         # for city in cities:
         #     print city.key, city.city_name

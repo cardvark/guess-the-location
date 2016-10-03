@@ -12,6 +12,7 @@ from datetime import date
 from google.appengine.ext import ndb
 import endpoints
 import forms
+import game_logic as gl
 
 
 # Manually built list of cities to populate City datastore.
@@ -180,8 +181,9 @@ class Game(ndb.Model):
     game_over = ndb.BooleanProperty(default=False)
     regions = ndb.StringProperty(repeated=True)
     last_cities = ndb.StringProperty(repeated=True)
+    monuments_list = ndb.StringProperty(repeated=True)
     cities_total = ndb.IntegerProperty(required=True, default=5)
-    cities_remaining = ndb.IntegerProperty()
+    cities_asked = ndb.IntegerProperty(default=0)
     active_question = ndb.KeyProperty(kind='CityQuestion')
 
     @classmethod
@@ -191,8 +193,8 @@ class Game(ndb.Model):
         if not user:
             raise endpoints.NotFoundException('A User with that name does not exist!')
 
-        if cities_total > 5:
-            raise endpoints.BadRequestException('Max number of cities is 5.')
+        if cities_total > gl.MAX_CITY_QUESTIONS:
+            raise endpoints.BadRequestException('Max number of cities is {}'.format(gl.MAX_CITY_QUESTIONS))
 
         if not set(regions_list).issubset(City.get_available_regions()):
             raise endpoints.BadRequestException('Region(s) requested are not available.')
@@ -201,7 +203,6 @@ class Game(ndb.Model):
             user=user.key,
             regions=regions_list,
             cities_total=cities_total,
-            cities_remaining=cities_total
         )
 
         game.put()
@@ -230,5 +231,5 @@ class CityQuestion(ndb.Model):
     question_over = ndb.BooleanProperty(default=False)
 
     @classmethod
-    def new_city_question(cls, ):
+    def new_city_question(cls, city_name, monumet_key, attempts_allowed):
         pass

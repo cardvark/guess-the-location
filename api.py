@@ -28,9 +28,6 @@ NEW_QUESTION_REQUEST = endpoints.ResourceContainer(
     websafe_game_key=messages.StringField(1)
 )
 
-# TODO: Monument ndb and form.
-# TODO: main.py handler to cycle through cities list and fill Monument datastore.
-
 
 @endpoints.api(
     name='guess_the_location',
@@ -75,6 +72,10 @@ class GuessLocationApi(remote.Service):
     )
     def new_question(self, request):
         game = utils.get_by_urlsafe(request.websafe_game_key, models.Game)
+
+        if game.game_over:
+            return game.to_form('Game already over!  Try another.')
+
         new_city_question = gl.get_new_city_question(game)
         # TODO
 
