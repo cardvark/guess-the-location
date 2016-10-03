@@ -26,6 +26,10 @@ handlers:
   script: main.app
   login: admin
 
+- url: /jobs/playground
+  script: main.app
+  login: admin
+
 - url: /_ah/spi/.*
   script: api.api
 

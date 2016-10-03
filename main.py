@@ -17,10 +17,9 @@ import sys
 from google.appengine.api import app_identity
 from google.appengine.api import mail
 from api import GuessLocationApi
-from models import City, CITIES_LIST, Monument
+import models
 import foursquareApi as fApi
 from google.appengine.ext import ndb
-# from forms import city_form
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -31,10 +30,10 @@ class BuildCityDataHandler(webapp2.RequestHandler):
         """Builds the datastore City entities"""
         # NOTE: temporarily commenting out this code.
 
-        ndb.delete_multi(City.query().fetch(keys_only=True))
+        ndb.delete_multi(models.City.query().fetch(keys_only=True))
 
-        for city_list in CITIES_LIST:
-            City.add_city(city_list[0], city_list[1], city_list[2])
+        for city_list in models.CITIES_LIST:
+            models.City.add_city(city_list[0], city_list[1], city_list[2])
 
 
         # Get by ancestor works!
@@ -55,7 +54,7 @@ class BuildMonumentsDataHandler(webapp2.RequestHandler):
 
         # ndb.delete_multi(Monument.query().fetch(keys_only=True))
 
-        cities_list = City.query().fetch()
+        cities_list = models.City.query().fetch()
         for city in cities_list:
             print '------------------------------------------------------'
             print city.city_name
@@ -63,11 +62,19 @@ class BuildMonumentsDataHandler(webapp2.RequestHandler):
             monuments_list = fApi.monuments_by_city(city.city_name)
 
             for monument in monuments_list:
-                mon = Monument.add_monument(monument, city.key)
+                mon = models.Monument.add_monument(monument, city.key)
                 print city.city_name, mon.name
+
+
+class PlayGroundHandler(webapp2.RequestHandler):
+    def get(self):
+        """General testing ground"""
+        print models.City.get_available_regions()
+
 
 
 app = webapp2.WSGIApplication([
     ('/jobs/build_city_data', BuildCityDataHandler),
-    ('/jobs/build_monuments_data', BuildMonumentsDataHandler)
+    ('/jobs/build_monuments_data', BuildMonumentsDataHandler),
+    ('/jobs/playground', PlayGroundHandler)
 ], debug=True)

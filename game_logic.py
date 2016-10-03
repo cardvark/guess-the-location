@@ -21,8 +21,14 @@ Rules:
     - 2) Marker and image, min zoom 12 (1)
     - 3) Monument name, min zoom out 6 (2)
 - If failed, set zoom to 4 and city name.
-- Score is based on how many tries.  10, 6, 2, 0.
+- Score is based on how many tries.
 
 """
 
+SCORE_DICT = {
+    3: 10,
+    2: 5,
+    1: 2,
+    0: 0
+}
 

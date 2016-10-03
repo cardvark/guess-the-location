@@ -10,6 +10,8 @@ Guess the location game server-side Python App Engine
 
 from datetime import date
 from google.appengine.ext import ndb
+import endpoints
+import forms
 
 # Note - could add this to main.py, add to a web address to run a datastore population script based on this list.
 # Might move this list to that function.
@@ -50,6 +52,18 @@ class User(ndb.Model):
     name = ndb.StringProperty(required=True)
     email = ndb.StringProperty()
 
+    @classmethod
+    def add_user(cls, name, email):
+        if User.query(User.name == name).get():
+            raise endpoints.ConflictException('A user with that name already exists!')
+
+        user = User(
+            name=name,
+            email=email
+        )
+        user.put()
+        return user
+
 
 class City(ndb.Model):
     """City object """
@@ -84,6 +98,14 @@ class City(ndb.Model):
             city.put()
 
         return city
+
+    @classmethod
+    def get_available_regions(cls):
+        query = City.query(projection=['region'], distinct=True)
+        regions = [data.region for data in query]
+
+        return regions
+
 
     def get_monuments(self):
         monuments = Monument.query(ancestor=self.key).fetch()
@@ -142,7 +164,41 @@ class Game(ndb.Model):
     game_over = ndb.BooleanProperty(required=True, default=False)
     regions = ndb.StringProperty(repeated=True)
     last_cities = ndb.StringProperty(repeated=True)
-    cities_remaining = ndb.IntegerProperty(required=True)
+    cities_total = ndb.IntegerProperty()
+    cities_remaining = ndb.IntegerProperty()
+    active_question = ndb.KeyProperty(kind='CityQuestion')
+
+    @classmethod
+    def new_game(cls, user, regions_list, cities_total):
+        """Creates and returns a new game"""
+        user = User.query(User.name == user).get()
+        if not user:
+            raise endpoints.NotFoundException('A User with that name does not exist!')
+
+        if cities_total > 5:
+            raise endpoints.BadRequestException('Max number of cities is 5.')
+
+        if not set(regions_list).issubset(City.get_available_regions()):
+            raise endpoints.BadRequestException('Region(s) requested are not available.')
+
+        game = Game(
+            user=user.key,
+            regions=regions_list,
+            cities_total=cities_total,
+            cities_remaining=cities_total
+        )
+
+        game.put()
+        return game
+
+    def to_form(self, message):
+        """Returns a Game_Form representation of the Game"""
+        form = forms.Game_Form()
+        form.urlsafe_key = self.key.urlsafe()
+        form.cities_total = self.cities_total
+        form.user = self.user.get().name
+        form.message = message
+        return form
 
 
 class CityQuestion(ndb.Model):
@@ -150,3 +206,8 @@ class CityQuestion(ndb.Model):
     - Always built w/ Game parent.
 
     """
+    city = ndb.KeyProperty(required=True, kind='City')
+    monument = ndb.KeyProperty(required=True, kind='Monument')
+    attempts_allowed = ndb.IntegerProperty()
+    attempts_remaining = ndb.IntegerProperty()
+    question_over = ndb.BooleanProperty(default=False)
