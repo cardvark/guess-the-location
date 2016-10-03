@@ -32,3 +32,7 @@ SCORE_DICT = {
     0: 0
 }
 
+
+def get_new_city_question(game):
+    # TODO
+    pass

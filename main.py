@@ -71,11 +71,19 @@ class PlayGroundHandler(webapp2.RequestHandler):
     def get(self):
         """General testing ground"""
         # print models.City.get_available_regions()
-        game = utils.get_by_urlsafe('aghkZXZ-Tm9uZXIRCxIER2FtZRiAgICAgOCXCgw', models.Game)
-        print game
+
+
+        # game = utils.get_by_urlsafe('aghkZXZ-Tm9uZXIRCxIER2FtZRiAgICAgOCXCgw', models.Game)
+        # print game
         # print game.cities_total
         # print game.user
         # print game.regions
+
+
+        # cities = models.City.get_cities_by_regions(['Asia'])
+
+        # for city in cities:
+        #     print city.key, city.city_name
 
 
 app = webapp2.WSGIApplication([

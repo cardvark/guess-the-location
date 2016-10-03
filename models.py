@@ -13,8 +13,8 @@ from google.appengine.ext import ndb
 import endpoints
 import forms
 
-# Note - could add this to main.py, add to a web address to run a datastore population script based on this list.
-# Might move this list to that function.
+
+# Manually built list of cities to populate City datastore.
 CITIES_LIST = [
     ['Hong Kong', 'China', 'Asia'],
     ['Singapore', 'Singapore', 'Asia'],
@@ -54,10 +54,10 @@ class User(ndb.Model):
 
     @classmethod
     def add_user(cls, name, email):
-        if User.query(User.name == name).get():
+        if cls.query(cls.name == name).get():
             raise endpoints.ConflictException('A user with that name already exists!')
 
-        user = User(
+        user = cls(
             name=name,
             email=email
         )
@@ -76,21 +76,21 @@ class City(ndb.Model):
     @classmethod
     def get_city(cls, city_name, country, region):
         """Queries and returns city entity"""
-        city = City.query()
-        city = city.filter(City.city_name == city_name)
-        city = city.filter(City.country == country)
-        city = city.filter(City.region == region)
+        city = cls.query()
+        city = city.filter(cls.city_name == city_name)
+        city = city.filter(cls.country == country)
+        city = city.filter(cls.region == region)
 
         return city.get()
 
     @classmethod
     def add_city(cls, city_name, country, region):
         """Adds new city entity, unless already exists"""
-        city = City.get_city(city_name, country, region)
+        city = cls.get_city(city_name, country, region)
 
         if not city:
             print 'New city!'
-            city = City(
+            city = cls(
                 city_name=city_name,
                 country=country,
                 region=region
@@ -101,14 +101,30 @@ class City(ndb.Model):
 
     @classmethod
     def get_available_regions(cls):
-        query = City.query(projection=['region'], distinct=True)
-        regions = [data.region for data in query]
+        """Gets unique list of regions (name only)
+        - Check against user/client request for what regions in new Game.
+        """
+        query = cls.query(projection=['region'], distinct=True)
+        regions_list = [data.region for data in query]
 
-        return regions
+        return regions_list
 
+    @classmethod
+    def get_cities_by_regions(cls, regions_list):
+        """Gets all cities from regions requested, key and name
+        - New Question generation requires knowing what cities are allowed.
+        """
+        cities_query = cls.query(
+            cls.region.IN(regions_list),
+            projection=['city_name']
+        )
+
+        return cities_query.fetch()
 
     def get_monuments(self):
+        """Gets monuments associated with a given city"""
         monuments = Monument.query(ancestor=self.key).fetch()
+
         return monuments
 
 
@@ -126,19 +142,19 @@ class Monument(ndb.Model):
     img_suffix = ndb.StringProperty()
 
     @classmethod
-    def get_monument(cls, fsq_id):
-        m_key = ndb.Key(Monument, fsq_id)
+    def get_monument_by_fsq_id(cls, fsq_id):
+        m_key = ndb.Key(cls, fsq_id)
 
         return m_key.get()
 
     @classmethod
     def add_monument(cls, monument_dict, parent_key):
         fsq_id = monument_dict.get('fsq_id')
-        monument = Monument.get_monument(fsq_id)
+        monument = cls.get_monument_by_fsq_id(fsq_id)
 
         if not monument:
-            m_key = ndb.Key(Monument, fsq_id, parent=parent_key)
-            monument = Monument(
+            m_key = ndb.Key(cls, fsq_id, parent=parent_key)
+            monument = cls(
                 key=m_key,
                 fsq_id=fsq_id,
                 name=monument_dict.get('name'),
@@ -149,7 +165,7 @@ class Monument(ndb.Model):
                 img_suffix=monument_dict.get('img_suffix')
             )
         else:
-            print 'exists! updating'
+            print monument.name + ' exists; updating...'
             for prop, val in monument_dict.iteritems():
                 monument.prop = val
 
@@ -181,7 +197,7 @@ class Game(ndb.Model):
         if not set(regions_list).issubset(City.get_available_regions()):
             raise endpoints.BadRequestException('Region(s) requested are not available.')
 
-        game = Game(
+        game = cls(
             user=user.key,
             regions=regions_list,
             cities_total=cities_total,
@@ -198,6 +214,7 @@ class Game(ndb.Model):
         form.cities_total = self.cities_total
         form.user = self.user.get().name
         form.message = message
+
         return form
 
 

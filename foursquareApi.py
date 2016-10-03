@@ -9,12 +9,13 @@ Guess the location game server-side Python App Engine
 """
 import requests
 import requests_toolbelt.adapters.appengine
-import json
-import random
+# import json
+# import random
 
 from settings import FOURSQUARE_CLIENT_ID, FOURSQUARE_CLIENT_SECRET
 
 requests_toolbelt.adapters.appengine.monkeypatch()
+
 
 def get_url_from_id(venue_id):
     print 'Getting url for ' + venue_id
