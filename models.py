@@ -212,13 +212,14 @@ class Game(ndb.Model):
     def to_form(self, message):
         """Returns a GameForm representation of the Game"""
         form = forms.GameForm()
-        form.urlsafe_key = self.key.urlsafe()
+        form.urlsafe_game_key = self.key.urlsafe()
         form.cities_total = self.cities_total
         form.user_name = self.user.get().name
         form.message = message
 
         return form
 
+    # May deprecate, not sure yet.
     def new_question_update(self, recent_cities, cities_asked, monuments_list, active_question):
         pass
 
@@ -233,6 +234,7 @@ class CityQuestion(ndb.Model):
     attempts_allowed = ndb.IntegerProperty(required=True)
     attempts_remaining = ndb.IntegerProperty()
     question_over = ndb.BooleanProperty(default=False)
+    guess_history = ndb.StringProperty(repeated=True)
 
     @classmethod
     def new_city_question(cls, game_parent_key, city_name, monument_key, attempts_allowed):
@@ -249,9 +251,11 @@ class CityQuestion(ndb.Model):
     def to_form(self, message):
         """Returns a CityQuestionForm representation of the CityQuestion"""
         form = forms.CityQuestionForm()
-        # Obtains allowed properties based on attempts remaining + minzoom
+        # Obtains allowed monument properties based on attempts remaining + minzoom
         form = gl.evaluate_question_response(self, form)
-        form.urlsafe_key = self.key.urlsafe()
+
+        # Adds own properties + message.
+        form.urlsafe_city_key = self.key.urlsafe()
         form.attempts_remaining = self.attempts_remaining
         form.message = message
 

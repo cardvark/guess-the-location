@@ -21,11 +21,16 @@ from settings import *
 
 EMAIL_SCOPE = endpoints.EMAIL_SCOPE
 API_EXPLORER_CLIENT_ID = endpoints.API_EXPLORER_CLIENT_ID
+
 USER_REQUEST = endpoints.ResourceContainer(forms.UserForm)
 NEW_GAME_REQUEST = endpoints.ResourceContainer(forms.NewGameForm)
-GET_QUESTION_REQUEST = endpoints.ResourceContainer(
+QUESTION_GET_REQUEST = endpoints.ResourceContainer(
     message_types.VoidMessage,
     websafe_game_key=messages.StringField(1)
+)
+QUESTION_ATTEMPT_POST_REQUEST = endpoints.ResourceContainer(
+    forms.QuestionAttemptForm,
+    websafe_question_key=messages.StringField(1)
 )
 
 
@@ -59,6 +64,7 @@ class GuessLocationApi(remote.Service):
         http_method='POST'
     )
     def new_game(self, request):
+        """Create a new game"""
         game = models.Game.new_game(request.user_name, request.regions, request.cities_total)
 
         return game.to_form('New game created.  Best of luck!')
@@ -67,13 +73,14 @@ class GuessLocationApi(remote.Service):
     # next_move should determine whether to create new question.
     # Alt, it could be 'get question' - either gets current active, or creates new.
     @endpoints.method(
-        request_message=GET_QUESTION_REQUEST,
+        request_message=QUESTION_GET_REQUEST,
         response_message=forms.CityQuestionForm,
         path='get_question',
         name='get_question',
-        http_method='POST'
+        http_method='GET'
     )
     def get_question(self, request):
+        """Request question for a game.  Returns active or next question."""
         game = utils.get_by_urlsafe(request.websafe_game_key, models.Game)
 
         if game.game_over:
@@ -89,6 +96,34 @@ class GuessLocationApi(remote.Service):
         else:
             question = gl.get_new_city_question(game)
             message = 'New question!  Good luck!'
+
+        return question.to_form(message)
+
+    @endpoints.method(
+        request_message=QUESTION_ATTEMPT_POST_REQUEST,
+        response_message=forms.CityQuestionForm,
+        path='submit_question_guess',
+        name='submit_question_guess',
+        http_method='POST'
+    )
+    def submit_question_guess(self, request):
+        """
+        - request: ws question key and guess string.
+
+        # TODO:
+        functionality to handle (in models and game_logic):
+        - check if question is still active, respond accordingly.
+        - check number of attempts, respond accordingly.
+        - check if guess is correct.  (make both to lower case)
+            - Update guess history.
+            - if incorrect, decrement attempts remaining.  send response.  More property info, and a string message.  (either default, or actual distance.)
+            - if correct, RECORD SCORE, make question inactive.
+                - check if GAME should be over.  Make game inactive, send response accordingly.
+
+        """
+        question = utils.get_by_urlsafe(request.websafe_question_key, models.CityQuestion)
+
+        message = 'Question retrieved. Your guess: ' + request.city_guess
 
         return question.to_form(message)
 

@@ -24,7 +24,7 @@ class NewGameForm(messages.Message):
 
 
 class GameForm(messages.Message):
-    urlsafe_key = messages.StringField(1)
+    urlsafe_game_key = messages.StringField(1)
     cities_total = messages.IntegerField(2)
     user_name = messages.StringField(3)
     message = messages.StringField(4)
@@ -37,7 +37,7 @@ class GameForm(messages.Message):
 # Should match game_logic.MONUMENT_PROPERTIES_UNLOCKS_DICT
 class CityQuestionForm(messages.Message):
     """CityQuestionForm -- response form"""
-    urlsafe_key = messages.StringField(1)
+    urlsafe_city_key = messages.StringField(1)
     lat = messages.FloatField(2)
     lng = messages.FloatField(3)
     min_zoom = messages.IntegerField(4)
@@ -47,3 +47,10 @@ class CityQuestionForm(messages.Message):
     url = messages.StringField(8)
     attempts_remaining = messages.IntegerField(9)
     message = messages.StringField(10)
+
+
+class QuestionAttemptForm(messages.Message):
+    """QuestionAttemptForm -- city guess request form
+    - Remaining request information in ResourceContainer
+    """
+    city_guess = messages.StringField(1)
