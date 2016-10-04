@@ -79,9 +79,17 @@ class PlayGroundHandler(webapp2.RequestHandler):
         # print game.last_cities
         # print game.monuments_list
 
-        new_city_question = gl.get_new_city_question(game)
-        print new_city_question
-        print new_city_question.city_name, new_city_question.monument.get().name
+        # new_city_question = gl.get_new_city_question(game)
+
+        question = game.active_question.get()
+        question.attempts_remaining = 3
+        question.put()
+        print question.city_name, question.monument.get().name
+        print question.to_form('Hey, that worked')
+
+        # gl.evaluate_question_response(question)
+        # print new_city_question
+        # print new_city_question.city_name, new_city_question.monument.get().name
         # print monument_key
 
         # print game

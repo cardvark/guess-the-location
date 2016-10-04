@@ -76,16 +76,19 @@ class GuessLocationApi(remote.Service):
     def get_question(self, request):
         game = utils.get_by_urlsafe(request.websafe_game_key, models.Game)
 
-        if game.cities_asked >= gl.MAX_CITY_QUESTIONS:
-            return game.to_form('Already generated max questions for this game!')
-
         if game.game_over:
             return game.to_form('Game is already over!  Try another one!')
+
+        # NOTE: shouldn't need this one; game should either have active or be in game_over status.  Shouldn't have the case where this is necessary.
+        # if game.cities_asked >= gl.MAX_CITY_QUESTIONS:
+        #     return game.to_form('Already generated max questions for this game!')
 
         if game.active_question:
             question = game.active_question.get()
         else:
             question = gl.get_new_city_question(game)
+
+        gl.get_allowed_properties(question)
 
         # response items:
         # websafe key for city question
@@ -93,6 +96,7 @@ class GuessLocationApi(remote.Service):
         # minZoom
         # name (None at first)
         # imgurl (None at first)
-        #
+        # message (personalized based on context)
+        # QUESTION: need differnet form for a make a guess response?
 
 api = endpoints.api_server([GuessLocationApi])

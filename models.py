@@ -245,3 +245,14 @@ class CityQuestion(ndb.Model):
         )
         new_question.put()
         return new_question
+
+    def to_form(self, message):
+        """Returns a CityQuestionForm representation of the CityQuestion"""
+        form = forms.CityQuestionForm()
+        # Obtains allowed properties based on attempts remaining + minzoom
+        form = gl.evaluate_question_response(self, form)
+        form.urlsafe_key = self.key.urlsafe()
+        form.attempts_remaining = self.attempts_remaining
+        form.message = message
+
+        return form

@@ -39,7 +39,7 @@ MINZOOM_DICT = {
 }
 
 # TODO: Not sure how this'll work yet.
-MONUMENT_PARAM_UNLOCKS_DICT = {
+MONUMENT_PROPERTIES_UNLOCKS_DICT = {
     3: ['lat', 'lng'],
     2: ['img_prefix', 'img_suffix'],
     1: ['name'],
@@ -52,6 +52,8 @@ QUESTION_ATTEMPTS = 3  # Max 3 guess attempts per city question.
 
 
 # TODO: set game_over status to true upon final question result.
+# TODO: question completion handling
+# TODO: set active_question to None upon each question completion.
 # TODO: Update a score for a question upon each question completion.
 
 def update_recent_cities(new_city_key, recent_cities):
@@ -125,15 +127,33 @@ def get_new_city_question(game):
     return new_city_question
 
 
-# TODO: pass to user map and info parameters based on # of tries / attempts remaining.
-def create_question_response(city_question):
-    """ Take CityQuestion entity, return appropriate response based on entity
+def get_allowed_properties(city_question):
+    """"""
+    allowed_list = []
+    for i in range(city_question.attempts_remaining, city_question.attempts_allowed + 1):
+        allowed_list += MONUMENT_PROPERTIES_UNLOCKS_DICT[i]
 
-    - websafe key for the CityQuestion
-    - lat, lng floats
-    - minZoom (dependent on attempts_remaining)
+    return allowed_list
+
+
+# TODO: pass to user map and info parameters based on # of tries / attempts remaining.
+def evaluate_question_response(city_question, form):
+    """ Evaluate appropriate response based on CityQuestion entity properties
+
+    :param city_question: CityQuestion object
+    :param form: CityQuestionForm object
+    :return: form with allowed monument properties and min zoom.
+
     """
-    pass
+    monument = city_question.monument.get()
+    allowed_properties = get_allowed_properties(city_question)
+
+    for prop in allowed_properties:
+        setattr(form, prop, getattr(monument, prop))
+
+    setattr(form, 'min_zoom', MINZOOM_DICT[city_question.attempts_remaining])
+
+    return form
 
 
 def check_city_question_attempt(city_question, guess):

@@ -34,6 +34,16 @@ class GameForm(messages.Message):
 #     """NewCityQuestionForm -- request requirements for new city question"""
 
 
+# Should match game_logic.MONUMENT_PROPERTIES_UNLOCKS_DICT
 class CityQuestionForm(messages.Message):
     """CityQuestionForm -- response form"""
-    # TODO
+    urlsafe_key = messages.StringField(1)
+    lat = messages.FloatField(2)
+    lng = messages.FloatField(3)
+    min_zoom = messages.IntegerField(4)
+    name = messages.StringField(5)
+    img_prefix = messages.StringField(6)
+    img_suffix = messages.StringField(7)
+    url = messages.StringField(8)
+    attempts_remaining = messages.IntegerField(9)
+    message = messages.StringField(10)
