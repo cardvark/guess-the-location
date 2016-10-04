@@ -23,7 +23,7 @@ EMAIL_SCOPE = endpoints.EMAIL_SCOPE
 API_EXPLORER_CLIENT_ID = endpoints.API_EXPLORER_CLIENT_ID
 USER_REQUEST = endpoints.ResourceContainer(forms.UserForm)
 NEW_GAME_REQUEST = endpoints.ResourceContainer(forms.NewGameForm)
-NEW_QUESTION_REQUEST = endpoints.ResourceContainer(
+GET_QUESTION_REQUEST = endpoints.ResourceContainer(
     message_types.VoidMessage,
     websafe_game_key=messages.StringField(1)
 )
@@ -59,7 +59,7 @@ class GuessLocationApi(remote.Service):
         http_method='POST'
     )
     def new_game(self, request):
-        game = models.Game.new_game(request.user, request.regions, request.cities_total)
+        game = models.Game.new_game(request.user_name, request.regions, request.cities_total)
 
         return game.to_form('New game created.  Best of luck!')
 
@@ -67,13 +67,13 @@ class GuessLocationApi(remote.Service):
     # next_move should determine whether to create new question.
     # Alt, it could be 'get question' - either gets current active, or creates new.
     @endpoints.method(
-        request_message=NEW_QUESTION_REQUEST,
+        request_message=GET_QUESTION_REQUEST,
         response_message=forms.CityQuestionForm,
-        path='new_question',
-        name='new_question',
+        path='get_question',
+        name='get_question',
         http_method='POST'
     )
-    def new_question(self, request):
+    def get_question(self, request):
         game = utils.get_by_urlsafe(request.websafe_game_key, models.Game)
 
         if game.cities_asked >= gl.MAX_CITY_QUESTIONS:
@@ -82,7 +82,17 @@ class GuessLocationApi(remote.Service):
         if game.game_over:
             return game.to_form('Game is already over!  Try another one!')
 
-        new_city_question = gl.get_new_city_question(game)
+        if game.active_question:
+            question = game.active_question.get()
+        else:
+            question = gl.get_new_city_question(game)
 
+        # response items:
+        # websafe key for city question
+        # lat, loc
+        # minZoom
+        # name (None at first)
+        # imgurl (None at first)
+        #
 
 api = endpoints.api_server([GuessLocationApi])

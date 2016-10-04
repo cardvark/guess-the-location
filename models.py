@@ -14,6 +14,7 @@ import endpoints
 import forms
 import game_logic as gl
 
+# TODO: Score model
 
 # Manually built list of cities to populate City datastore.
 CITIES_LIST = [
@@ -187,9 +188,9 @@ class Game(ndb.Model):
     active_question = ndb.KeyProperty(kind='CityQuestion')
 
     @classmethod
-    def new_game(cls, user, regions_list, cities_total):
+    def new_game(cls, user_name, regions_list, cities_total):
         """Creates and returns a new game"""
-        user = User.query(User.name == user).get()
+        user = User.query(User.name == user_name).get()
         if not user:
             raise endpoints.NotFoundException('A User with that name does not exist!')
 
@@ -213,10 +214,13 @@ class Game(ndb.Model):
         form = forms.GameForm()
         form.urlsafe_key = self.key.urlsafe()
         form.cities_total = self.cities_total
-        form.user = self.user.get().name
+        form.user_name = self.user.get().name
         form.message = message
 
         return form
+
+    def new_question_update(self, recent_cities, cities_asked, monuments_list, active_question):
+        pass
 
 
 class CityQuestion(ndb.Model):

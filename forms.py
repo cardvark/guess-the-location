@@ -18,7 +18,7 @@ class UserForm(messages.Message):
 
 
 class NewGameForm(messages.Message):
-    user = messages.StringField(1)
+    user_name = messages.StringField(1)
     regions = messages.StringField(2, repeated=True)
     cities_total = messages.IntegerField(3)
 
@@ -26,7 +26,7 @@ class NewGameForm(messages.Message):
 class GameForm(messages.Message):
     urlsafe_key = messages.StringField(1)
     cities_total = messages.IntegerField(2)
-    user = messages.StringField(3)
+    user_name = messages.StringField(3)
     message = messages.StringField(4)
 
 # potentially deprecated.

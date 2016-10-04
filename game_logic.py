@@ -5,12 +5,6 @@ game_logic.py - game logic functions
 
 Guess the location game server-side Python App Engine
 
-Thoughts:
-- Steps:
-  -
-
-- pseudo-randomization for cities to choose.  Keep a list of 3 most recent cities, don't allow a choice to be of one of those three.
--
 
 Rules:
 - A game can have a variable number of city questions, max 5
@@ -28,6 +22,7 @@ import models
 import random
 import endpoints
 
+# Game constants
 SCORE_DICT = {
     3: 10,
     2: 5,
@@ -35,13 +30,29 @@ SCORE_DICT = {
     0: 0
 }
 
-RECENT_CITIES_LIMIT = 3
-MAX_CITY_QUESTIONS = 5
-QUESTION_ATTEMPTS = 3
+# TODO: Implement use of this dict.
+MINZOOM_DICT = {
+    3: 16,
+    2: 12,
+    1: 6,
+    0: 4
+}
+
+# TODO: Not sure how this'll work yet.
+MONUMENT_PARAM_UNLOCKS_DICT = {
+    3: ['lat', 'lng'],
+    2: ['img_prefix', 'img_suffix'],
+    1: ['name'],
+    0: ['url']
+}
+
+RECENT_CITIES_LIMIT = 3  # prevents duplicate city question for at least 3
+MAX_CITY_QUESTIONS = 5  # Max 5 city questions per game
+QUESTION_ATTEMPTS = 3  # Max 3 guess attempts per city question.
 
 
-# TODO: pass to user map and info parameters based on # of tries / attempts remaining.
-
+# TODO: set game_over status to true upon final question result.
+# TODO: Update a score for a question upon each question completion.
 
 def update_recent_cities(new_city_key, recent_cities):
     recent_cities.append(new_city_key)
@@ -52,20 +63,28 @@ def update_recent_cities(new_city_key, recent_cities):
     return recent_cities
 
 
-def get_unique_random(prev_list, possible_list):
+# TODO: further testing. want to ensure this is working as intended.
+def get_unique_random_key(prev_list, possible_list):
+    """Return a random item from possible_list that was not in prev_list
+
+    :param prev_list: list of websafe keys
+    :param possible_list: list of entities
+    :return: key of random item from possible_list
+    """
     found = False
 
     while not found:
         new_item = random.choice(possible_list)
         new_item_key = new_item.key
 
-        if new_item_key not in prev_list:
+        if new_item_key.urlsafe() not in prev_list:
             found = True
 
     return new_item_key
 
 
 def get_new_city_question(game):
+    """Build and return a new CityQuestion entity"""
     # Gather game object data.
     cities_asked = game.cities_asked
     recent_cities = game.last_cities
@@ -77,12 +96,12 @@ def get_new_city_question(game):
 
     # Get a new city.
     possible_cities = models.City.get_cities_by_regions(game.regions)
-    new_city_key = get_unique_random(recent_cities, possible_cities)
+    new_city_key = get_unique_random_key(recent_cities, possible_cities)
     recent_cities = update_recent_cities(new_city_key.urlsafe(), recent_cities)
 
     # Get a monument.
     monuments_list = new_city_key.get().get_monuments()
-    new_monument_key = get_unique_random(previous_monuments, monuments_list)
+    new_monument_key = get_unique_random_key(previous_monuments, monuments_list)
     previous_monuments.append(new_monument_key.urlsafe())
 
     # Create new city question
@@ -98,9 +117,24 @@ def get_new_city_question(game):
     game.cities_asked = cities_asked + 1
     game.monuments_list = previous_monuments
     game.active_question = new_city_question.key
+    game.put()
 
     print new_city_key.get().city_name
     print new_monument_key.get().name
-    game.put()
 
     return new_city_question
+
+
+# TODO: pass to user map and info parameters based on # of tries / attempts remaining.
+def create_question_response(city_question):
+    """ Take CityQuestion entity, return appropriate response based on entity
+
+    - websafe key for the CityQuestion
+    - lat, lng floats
+    - minZoom (dependent on attempts_remaining)
+    """
+    pass
+
+
+def check_city_question_attempt(city_question, guess):
+    pass
