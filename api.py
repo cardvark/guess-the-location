@@ -85,18 +85,12 @@ class GuessLocationApi(remote.Service):
 
         if game.active_question:
             question = game.active_question.get()
+            message = 'Active question in progress!'
         else:
             question = gl.get_new_city_question(game)
+            message = 'New question!  Good luck!'
 
-        gl.get_allowed_properties(question)
+        return question.to_form(message)
 
-        # response items:
-        # websafe key for city question
-        # lat, loc
-        # minZoom
-        # name (None at first)
-        # imgurl (None at first)
-        # message (personalized based on context)
-        # QUESTION: need differnet form for a make a guess response?
 
 api = endpoints.api_server([GuessLocationApi])
