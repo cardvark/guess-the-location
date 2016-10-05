@@ -40,8 +40,8 @@ QUESTION_ATTEMPT_POST_REQUEST = endpoints.ResourceContainer(
 @endpoints.api(
     name='guess_the_location',
     version='v1',
-    allowed_client_ids=[WEB_CLIENT_ID, API_EXPLORER_CLIENT_ID],
-    scopes=[EMAIL_SCOPE]
+    # allowed_client_ids=[WEB_CLIENT_ID, API_EXPLORER_CLIENT_ID],
+    # scopes=[EMAIL_SCOPE]
 )
 class GuessLocationApi(remote.Service):
     """Guess the location game API"""
@@ -167,7 +167,7 @@ class GuessLocationApi(remote.Service):
         if not games:
             raise endpoints.NotFoundException('No {}games found!'.format(active_message))
 
-        games_message = '{user_name} {active}games found!'.format(
+        games_message = 'User: {user_name} -- {active}games found!'.format(
             user_name=request.user_name,
             active=active_message)
 
@@ -177,7 +177,6 @@ class GuessLocationApi(remote.Service):
 
 
     # To be implemented:
-    # get_user_games - active games.  (all games?  maybe a bool check in request.)
     # cancel_game - cancels game in progress.  boolean property for cancelled?
     # get_high_scores - descending order.  optional param "number_of_results" to limit # of results returned.
     # get_user_rankings - all users ranked by performance.  Includes name and performance indicator. win/loss ratio or some such.

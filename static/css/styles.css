@@ -2,6 +2,10 @@
     height: 100%;
 }
 
+.left-pane {
+    padding: 20px 30px 20px 30px;
+}
+
 .main-row {
     height: 100%;
 }

@@ -1,39 +1,83 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-    <link rel="stylesheet" href="/css/styles.css">
-    <title>Where it at?  Guess the location!</title>
-    <!-- Initialize the google API javascript client. -->
-    <script>
-        function init() {
-            gapi.client.load('guess_the_location', 'v1', null, '//' + window.location.host + '/_ah/api');
-            // gapi.client.load('oauth2', 'v2', function () {
-            //     angular.bootstrap(document, ['conferenceApp']);
-            // })
-        };
-    </script>
-    <script src="//apis.google.com/js/client:plusone.js?onload=init"></script>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+  <link rel="stylesheet" href="/css/styles.css">
+  <title>Where it at?  Guess the location!</title>
+  <!-- Initialize the google API javascript client. -->
+  <script>
+    function init() {
+      gapi.client.load('guess_the_location', 'v1', null, '//' + window.location.host + '/_ah/api');
+      // gapi.client.load('oauth2', 'v2', function () {
+      //     angular.bootstrap(document, ['conferenceApp']);
+      // })
+    };
+  </script>
+  <script src="//apis.google.com/js/client:plusone.js?onload=init"></script>
 </head>
 <body>
-    <div class="container-fluid">
-        <div class="row main-row">
-            <div class="col-md-4">
-                Hi!
-            </div>
-            <div class="col-md-8 map-col">
-                <div id="map" class="map-div"></div>
-            </div>
+  <div class="container-fluid">
+    <div class="row main-row">
+      <div class="col-md-4 left-pane">
+        <div class="row">Large space for image and other info
+          <h4>Info Space</h4>
+
         </div>
+        <div class="row">
+          <h4>Create User</h4>
+          <form data-bind="submit: VM function">
+            Email
+            <!-- should persist if error, both reset if accepted. -->
+            <input data-bind="value: observable">
+            <br>
+            user_name
+            <input data-bind="value: observable">
+            <br>
+            <button type="submit">Submit</button>
+          </form>
+          <br>
+          <div data-bind="html: feedback observable"></div>
+          <!-- Should persist until new one is created. -->
+        </div>
+        <div class="row">
+          <h4>Create new game</h4>
+          <form data-bind="submit: VM function">
+            user_name
+            <input data-bind="value: observable">
+            <br>
+            regions
+            <input placeholder="Comma separated" data-bind="value: observable">
+            <br>
+            Total cities (max 5) <!-- could change max to data-bind, maybe. -->
+            <input data-bind="value: observable">
+            <br>
+            <button type="submit">Submit</button>
+          </form>
+          <div data-bind="html: feedback observable"></div>
+        </div>
+        <div class="row">get_question: websafe game key
+          <h4>Get Question</h4>
+        </div>
+        <div class="row">submit_question_guess: websafe question key, guess
+          <h4>Submit Guess</h4>
+        </div>
+        <div class="row">get_games_by_user: user_name, all_games true/false
+          <h5>Get User's Games</h5>
+        </div>
+      </div>
+      <div class="col-md-8 map-col">
+        <div id="map" class="map-div"></div>
+      </div>
     </div>
-    <script src="http://ajax.aspnetcdn.com/ajax/knockout/knockout-3.3.0.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-    <script src="/js/app.js"></script>
-    <script async defer type="text/javascript"
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBvfR4_LGq3GU64PVTlWevBn87X_DvGbLk&callback=initMap" onerror="console.log('wtf')">
-    </script>
+  </div>
+  <script src="http://ajax.aspnetcdn.com/ajax/knockout/knockout-3.3.0.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+  <script src="/js/app.js"></script>
+  <script async defer type="text/javascript"
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBvfR4_LGq3GU64PVTlWevBn87X_DvGbLk&callback=initMap" onerror="console.log('wtf')">
+  </script>
 
 </body>
 </html>
