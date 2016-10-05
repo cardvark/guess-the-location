@@ -20,19 +20,20 @@
   <div class="container-fluid">
     <div class="row main-row">
       <div class="col-md-4 left-pane">
-        <div class="row">Large space for image and other info
+        <div class="row info-space">
           <h4>Info Space</h4>
-
+          <div data-bind="monument data info observable"></div>
+          <div data-bind="general feedback observable"></div>
         </div>
         <div class="row">
           <h4>Create User</h4>
           <form data-bind="submit: VM function">
             Email
             <!-- should persist if error, both reset if accepted. -->
-            <input data-bind="value: observable">
+            <input placeholder="String" data-bind="value: observable">
             <br>
             user_name
-            <input data-bind="value: observable">
+            <input placeholder="String" data-bind="value: observable">
             <br>
             <button type="submit">Submit</button>
           </form>
@@ -44,27 +45,46 @@
           <h4>Create new game</h4>
           <form data-bind="submit: VM function">
             user_name
-            <input data-bind="value: observable">
+            <input placeholder="String" data-bind="value: observable">
             <br>
             regions
             <input placeholder="Comma separated" data-bind="value: observable">
             <br>
             Total cities (max 5) <!-- could change max to data-bind, maybe. -->
-            <input data-bind="value: observable">
+            <input placeholder="Integer" data-bind="value: observable">
             <br>
             <button type="submit">Submit</button>
           </form>
+          <br>
           <div data-bind="html: feedback observable"></div>
         </div>
-        <div class="row">get_question: websafe game key
+        <div class="row">
           <h4>Get Question</h4>
+          <form data-bind="submit: VM function">
+            game_key
+            <input placeholder="String" data-bind="value: observable">
+            <br>
+            <button type="submit">Submit</button>
+          </form>
+          <br>
+          <div data-bind="html: feedback observable"></div>
         </div>
-        <div class="row">submit_question_guess: websafe question key, guess
+        <div class="row">
           <h4>Submit Guess</h4>
+          <form data-bind="submit: VM function">
+            question key
+            <input placeholder="String" data-bind="value: observable">
+            <br>
+            city guess
+            <input placeholder="String" data-bind="value: observable">
+            <button type="submit">Submit</button>
+          </form>
+          <br>
+          <div data-bind="html: feedback observable"></div>
         </div>
-        <div class="row">get_games_by_user: user_name, all_games true/false
+<!--         <div class="row">get_games_by_user: user_name, all_games true/false
           <h5>Get User's Games</h5>
-        </div>
+        </div> -->
       </div>
       <div class="col-md-8 map-col">
         <div id="map" class="map-div"></div>

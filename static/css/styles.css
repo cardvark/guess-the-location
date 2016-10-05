@@ -1,4 +1,23 @@
+/*body {
+
+}*/
+
 .container-fluid {
+    height: 100%;
+}
+
+.main-row {
+    height: 100%;
+    margin: 0;
+}
+
+.map-col {
+    height: 100%;
+    padding: 0;
+}
+
+#map {
+    min-height: 500px;
     height: 100%;
 }
 
@@ -6,15 +25,35 @@
     padding: 20px 30px 20px 30px;
 }
 
-.main-row {
-    height: 100%;
+.info-space {
+    min-height: 250px;
+}
+
+/* Adapted from http://stackoverflow.com/a/38994995/3902579 */
+.left-pane, .map-col {
+    -ms-overflow-style: none;  // IE 10+
+    overflow: -moz-scrollbars-none;  // Firefox
+}
+.left-pane::-webkit-scrollbar, .map-col::-webkit-scrollbar {
+    display: none;  // Safari and Chrome
+}
+
+/* Adapted from http://stackoverflow.com/questions/22752637/how-to-implement-responsive-independently-scrolling-panes-in-bootstrap-3 */
+.left-pane {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 33%;
+    overflow: hidden;
+    overflow-y: scroll;
 }
 
 .map-col {
-    height: 100%;
-}
-
-#map {
-    min-height: 500px;
-    height: 100%;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    overflow-y: scroll;
+    width: 66%;
 }
