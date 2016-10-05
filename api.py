@@ -22,16 +22,19 @@ from settings import *
 EMAIL_SCOPE = endpoints.EMAIL_SCOPE
 API_EXPLORER_CLIENT_ID = endpoints.API_EXPLORER_CLIENT_ID
 
-USER_REQUEST = endpoints.ResourceContainer(forms.UserForm)
-NEW_GAME_REQUEST = endpoints.ResourceContainer(forms.NewGameForm)
+NEW_USER_POST_REQUEST = endpoints.ResourceContainer(forms.UserForm)
+NEW_GAME_POST_REQUEST = endpoints.ResourceContainer(forms.NewGameForm)
 QUESTION_GET_REQUEST = endpoints.ResourceContainer(
     message_types.VoidMessage,
-    websafe_game_key=messages.StringField(1)
+    websafe_game_key=messages.StringField(1, required=True)
 )
 QUESTION_ATTEMPT_POST_REQUEST = endpoints.ResourceContainer(
     forms.QuestionAttemptForm,
-    websafe_question_key=messages.StringField(1)
+    websafe_question_key=messages.StringField(1, required=True)
 )
+# USER_GAMES_GET_REQUEST = endpoints.ResourceContainer(
+#     forms.UserGamesForm
+# )
 
 
 @endpoints.api(
@@ -44,7 +47,7 @@ class GuessLocationApi(remote.Service):
     """Guess the location game API"""
 
     @endpoints.method(
-        request_message=USER_REQUEST,
+        request_message=NEW_USER_POST_REQUEST,
         response_message=forms.UserForm,
         path='user',
         name='create_user',
@@ -59,7 +62,7 @@ class GuessLocationApi(remote.Service):
         return forms.UserForm(user_name=user.name, email=user.email)
 
     @endpoints.method(
-        request_message=NEW_GAME_REQUEST,
+        request_message=NEW_GAME_POST_REQUEST,
         response_message=forms.GameForm,
         path='game',
         name='new_game',
@@ -120,20 +123,7 @@ class GuessLocationApi(remote.Service):
         http_method='POST'
     )
     def submit_question_guess(self, request):
-        """
-        - request: ws question key and guess string.
-
-        # TODO:
-        functionality to handle (in models and game_logic):
-        - check if question is still active, respond accordingly.
-        - check number of attempts, respond accordingly.
-        - check if guess is correct.  (make both to lower case)
-            - Update guess history.
-            - if incorrect, decrement attempts remaining.  send response.  More property info, and a string message.  (either default, or actual distance.)
-            - if correct, RECORD SCORE, make question inactive.
-                - check if GAME should be over.  Make game inactive, send response accordingly.
-
-        """
+        """Submit question and guess. Updates CityQuestion, Game, Score."""
         question = utils.get_by_urlsafe(request.websafe_question_key, models.CityQuestion)
         guess = request.city_guess
 
@@ -156,5 +146,45 @@ class GuessLocationApi(remote.Service):
 
         return question.to_form(message)
 
+    @endpoints.method(
+        request_message=forms.UserGamesForm,
+        response_message=forms.GameForms,
+        path='get_games_by_user',
+        name='get_games_by_user',
+        http_method='GET'
+    )
+    def get_games_by_user(self, request):
+        """Get list of games (active or all) by user_name."""
+        user = models.User.query(models.User.name == request.user_name).get()
+        if not user:
+            raise endpoints.NotFoundException('A User with that name does not exist!')
+
+        games = models.Game.get_games_by_user(user, request.all_games)
+        active_message = ''
+        if not request.all_games:
+            active_message = 'active '
+
+        if not games:
+            raise endpoints.NotFoundException('No {}games found!'.format(active_message))
+
+        games_message = '{user_name} {active}games found!'.format(
+            user_name=request.user_name,
+            active=active_message)
+
+        form_items = [game.to_form() for game in games]
+
+        return forms.GameForms(items=form_items, message=games_message)
+
+
+    # To be implemented:
+    # get_user_games - active games.  (all games?  maybe a bool check in request.)
+    # cancel_game - cancels game in progress.  boolean property for cancelled?
+    # get_high_scores - descending order.  optional param "number_of_results" to limit # of results returned.
+    # get_user_rankings - all users ranked by performance.  Includes name and performance indicator. win/loss ratio or some such.
+    # get_game_history - provides history of moves (with responses) for each game.
+
+    # cron job of some kinds.  and notifications.
+    # full readme
+    # Design thoughts in Design.txt
 
 api = endpoints.api_server([GuessLocationApi])

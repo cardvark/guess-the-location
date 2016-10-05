@@ -170,6 +170,9 @@ class Monument(ndb.Model):
 
 class Game(ndb.Model):
     """Game object"""
+    # TODO: changes 'cities_asked' and all instances to 'cities_remaining'
+    # Update logic accordingly.
+
     user = ndb.KeyProperty(required=True, kind='User')
     game_over = ndb.BooleanProperty(default=False)
     regions = ndb.StringProperty(repeated=True)
@@ -191,13 +194,40 @@ class Game(ndb.Model):
 
         return game
 
-    def to_form(self, message):
+    @classmethod
+    def get_games_by_user(cls, user, all_games):
+        filters = [{'field': 'user', 'operator': '=', 'value': user.key}]
+        if not all_games:
+            active_filter = {
+                'field': 'game_over',
+                'operator': '=',
+                'value': False
+            }
+            filters.append(active_filter)
+
+        games_query = cls.query()
+        for fltr in filters:
+            formatted_filter = ndb.query.FilterNode(
+                fltr['field'],
+                fltr['operator'],
+                fltr['value']
+                )
+            games_query = games_query.filter(formatted_filter)
+
+        return games_query.fetch()
+
+    def to_form(self, message=None):
         """Returns a GameForm representation of the Game"""
         form = forms.GameForm()
         form.urlsafe_game_key = self.key.urlsafe()
         form.cities_total = self.cities_total
         form.user_name = self.user.get().name
-        form.message = message
+        form.cities_remaining = self.cities_total - self.cities_asked
+        if message:
+            form.message = message
+
+        if self.active_question:
+            form.active_question = self.active_question.urlsafe()
 
         return form
 
