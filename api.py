@@ -67,7 +67,18 @@ class GuessLocationApi(remote.Service):
     )
     def new_game(self, request):
         """Create a new game"""
-        game = models.Game.new_game(request.user_name, request.regions, request.cities_total)
+        user = models.User.query(models.User.name == request.user_name).get()
+        if not user:
+            raise endpoints.NotFoundException('A User with that name does not exist!')
+
+        if request.cities_total > gl.MAX_CITY_QUESTIONS:
+            raise endpoints.BadRequestException('Max number of cities is {}'.format(gl.MAX_CITY_QUESTIONS))
+
+        if not set(request.regions).issubset(models.City.get_available_regions()):
+            raise endpoints.BadRequestException('Region(s) requested are not available.')
+
+        game = models.Game.new_game(user, request.regions, request.cities_total)
+        game_score = models.Score.new_score(user.key, game.key)
 
         return game.to_form('New game created.  Best of luck!')
 
@@ -135,7 +146,7 @@ class GuessLocationApi(remote.Service):
         if correct:
             message += '<br><br>Correct!  Good job!'
         else:
-            message += '<br><br>Wrong answer!  Try again!'
+            message += '<br><br>Wrong answer!'
 
         if question_over and not correct:
             message += '<br><br>Out of attempts!  The correct answer was: ' + question.city_name

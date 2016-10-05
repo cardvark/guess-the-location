@@ -29,10 +29,6 @@ class GameForm(messages.Message):
     user_name = messages.StringField(3)
     message = messages.StringField(4)
 
-# potentially deprecated.
-# class NewCityQuestionForm(messages.Message):
-#     """NewCityQuestionForm -- request requirements for new city question"""
-
 
 # Should match game_logic.MONUMENT_PROPERTIES_UNLOCKS_DICT
 class CityQuestionForm(messages.Message):

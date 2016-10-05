@@ -8,7 +8,7 @@ Guess the location game server-side Python App Engine
 
 """
 
-from datetime import date
+from datetime import datetime
 from google.appengine.ext import ndb
 import endpoints
 import forms
@@ -180,26 +180,15 @@ class Game(ndb.Model):
     active_question = ndb.KeyProperty(kind='CityQuestion')
 
     @classmethod
-    def new_game(cls, user_name, regions_list, cities_total):
+    def new_game(cls, user, regions_list, cities_total):
         """Creates and returns a new game"""
-        # TODO: move all this logic to api.py.
-        user = User.query(User.name == user_name).get()
-        if not user:
-            raise endpoints.NotFoundException('A User with that name does not exist!')
-
-        if cities_total > gl.MAX_CITY_QUESTIONS:
-            raise endpoints.BadRequestException('Max number of cities is {}'.format(gl.MAX_CITY_QUESTIONS))
-
-        if not set(regions_list).issubset(City.get_available_regions()):
-            raise endpoints.BadRequestException('Region(s) requested are not available.')
-
         game = cls(
             user=user.key,
             regions=regions_list,
             cities_total=cities_total,
         )
-
         game.put()
+
         return game
 
     def to_form(self, message):
@@ -281,49 +270,50 @@ class CityQuestion(ndb.Model):
 
         return form
 
-    def attempt_update(self, guess):
+    def guess_update(self, guess):
         self.guess_history.append(guess)
         self.attempts_remaining -= 1
         self.put()
 
         return self.attempts_remaining
 
-    # def decrement_attempts(self):
-    #     """Decrements attempts by one, returns attempts_remaining"""
-    #     attempts = self.attempts_remaining
-    #     if attempts <= 0:
-    #         raise ValueError('Cannot decrement attempts remaining below 0.')
-    #     self.attempts_remaining = attempts - 1
-    #     self.put()
-    #     return self.attempts_remaining
-
-    # def update_history(self, guess):
-    #     """Adds user guess to history of question, returns guess_history"""
-    #     # TODO: need to test this.  Verify I can directly append and then need to put()
-    #     self.guess_history.append(guess)
-    #     self.put()
-    #     return self.guess_history
-
     def end_question(self, correct=False):
         """Ends the question. Updates score if correct, based on attempts_remaining"""
         self.question_over = True
         self.guessed_correct = correct
         self.put()
-        # if correct:
-        #     self.guessed_correct = True
-        #     question_score = gl.get_question_score(self)
-
-        # TODO: get parent's score entity.
-        # Udpate parent's score entity.
-        # actually, probable have game_logic update score.
 
 
 # TODO: Score model
 class Score(ndb.Model):
     """ Score object
-    - history of questions for the game.
     - date (for end of game, including cancel)
     - parent is game?
     - score for the game.  (will be an updated total)
     - has user
     """
+    user = ndb.KeyProperty(required=True, kind='User')
+    date = ndb.DateTimeProperty(auto_now=True)
+    total_score = ndb.IntegerProperty(default=0)
+
+    @classmethod
+    def new_score(cls, user_key, game_key):
+        score_object = Score(
+            user=user_key,
+            parent=game_key
+        )
+        score_object.put()
+
+        return score_object
+
+    @classmethod
+    def get_from_parent(cls, parent_game_key):
+        score_object = cls.query(ancestor=parent_game_key).get()
+
+        return score_object
+
+    def update_score(self, question_score):
+        self.total_score += question_score
+        self.put()
+
+        return self.total_score

@@ -55,6 +55,7 @@ QUESTION_ATTEMPTS = 3  # Max 3 guess attempts per city question.
 # TODO: set active_question to None upon each question completion.
 # TODO: Update a score for a question upon each question completion.
 
+
 def update_recent_cities(new_city_key, recent_cities):
     recent_cities.append(new_city_key)
 
@@ -114,7 +115,7 @@ def get_new_city_question(game):
     )
 
     # Update the game's data
-    # TODO: Move this over to City entity method.
+    # TODO: Move this over to Game entity method.
     game.last_cities = recent_cities
     game.cities_asked = cities_asked + 1
     game.monuments_list = previous_monuments
@@ -138,7 +139,6 @@ def get_allowed_properties(city_question):
     return allowed_list
 
 
-# TODO: pass to user map and info parameters based on # of tries / attempts remaining.
 def evaluate_question_response(city_question, form):
     """Evaluate appropriate response based on CityQuestion entity properties
 
@@ -153,8 +153,7 @@ def evaluate_question_response(city_question, form):
     setattr(form, 'min_zoom', MINZOOM_DICT[city_question.attempts_remaining])
 
     if city_question.question_over:
-        setattr(form, 'question_score', get_question_score(city_question))
-
+        setattr(form, 'question_score', get_question_points(city_question))
 
     for prop in allowed_properties:
         setattr(form, prop, getattr(monument, prop))
@@ -181,14 +180,15 @@ def manage_city_question_attempt(city_question, guess):
     question_over = False
     guess_correct = check_city_question_guess(city_question, guess)
     parent_game = city_question.key.parent().get()
-    attempts_remaining = city_question.attempt_update(guess)
+    attempts_remaining = city_question.guess_update(guess)
 
     if guess_correct or attempts_remaining <= 0:
         city_question.end_question(guess_correct)
-        question_score = get_question_score(city_question)
+        question_points = get_question_points(city_question)
         question_over = True
         # To be implemented, somehow:
-        # game_score = models.Score.get_from_game(parent_game)
+        game_score = models.Score.get_from_parent(parent_game.key)
+        game_score.update_score(question_points)
         game_over = parent_game.end_question_update()
 
         if game_over:
@@ -197,7 +197,7 @@ def manage_city_question_attempt(city_question, guess):
     return game_over, question_over, guess_correct
 
 
-def get_question_score(city_question):
+def get_question_points(city_question):
     """Evaluates question for points received"""
     score = 0
     if city_question.guessed_correct:
