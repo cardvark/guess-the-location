@@ -14,7 +14,6 @@ import endpoints
 import forms
 import game_logic as gl
 
-# TODO: Score model
 
 # Manually built list of cities to populate City datastore.
 CITIES_LIST = [
@@ -56,9 +55,6 @@ class User(ndb.Model):
 
     @classmethod
     def add_user(cls, name, email):
-        if cls.query(cls.name == name).get():
-            raise endpoints.ConflictException('A user with that name already exists!')
-
         user = cls(
             name=name,
             email=email
@@ -103,9 +99,7 @@ class City(ndb.Model):
 
     @classmethod
     def get_available_regions(cls):
-        """Gets unique list of regions (name only)
-        - Check against user/client request for what regions in new Game.
-        """
+        """Gets unique list of regions (name only)"""
         query = cls.query(projection=['region'], distinct=True)
         regions_list = [data.region for data in query]
 
@@ -113,9 +107,7 @@ class City(ndb.Model):
 
     @classmethod
     def get_cities_by_regions(cls, regions_list):
-        """Gets all cities from regions requested, key and name
-        - New Question generation requires knowing what cities are allowed.
-        """
+        """Gets all cities from regions requested, city_name only"""
         cities_query = cls.query(
             cls.region.IN(regions_list),
             projection=['city_name']
@@ -190,6 +182,7 @@ class Game(ndb.Model):
     @classmethod
     def new_game(cls, user_name, regions_list, cities_total):
         """Creates and returns a new game"""
+        # TODO: move all this logic to api.py.
         user = User.query(User.name == user_name).get()
         if not user:
             raise endpoints.NotFoundException('A User with that name does not exist!')
@@ -221,7 +214,33 @@ class Game(ndb.Model):
 
     # May deprecate, not sure yet.
     def new_question_update(self, recent_cities, cities_asked, monuments_list, active_question):
+        """Updates Game entity based on new question.
+        - Updates recent_cities list
+        - Increments cities_asked
+        - adds monument to list.
+        - adds active_question key to active_question
+
+        """
         pass
+
+    def end_question_update(self):
+        """Updates Game entity based on finished question.
+        - set active_question to None
+        """
+        # redo this.  Class methods should update the object.
+        # Don't want class methods to cause chain reaction of methods.
+        # esp. to other methods.
+        # no updating score from another class's method.
+        # can instead return whether asked has surpassed total.
+        self.active_question = None
+        self.put()
+
+        return self.cities_asked >= self.cities_total
+
+    def end_game(self):
+        """Ends game upon completion or cancel"""
+        self.game_over = True
+        self.put()
 
 
 class CityQuestion(ndb.Model):
@@ -234,6 +253,7 @@ class CityQuestion(ndb.Model):
     attempts_allowed = ndb.IntegerProperty(required=True)
     attempts_remaining = ndb.IntegerProperty()
     question_over = ndb.BooleanProperty(default=False)
+    guessed_correct = ndb.BooleanProperty()
     guess_history = ndb.StringProperty(repeated=True)
 
     @classmethod
@@ -260,3 +280,50 @@ class CityQuestion(ndb.Model):
         form.message = message
 
         return form
+
+    def attempt_update(self, guess):
+        self.guess_history.append(guess)
+        self.attempts_remaining -= 1
+        self.put()
+
+        return self.attempts_remaining
+
+    # def decrement_attempts(self):
+    #     """Decrements attempts by one, returns attempts_remaining"""
+    #     attempts = self.attempts_remaining
+    #     if attempts <= 0:
+    #         raise ValueError('Cannot decrement attempts remaining below 0.')
+    #     self.attempts_remaining = attempts - 1
+    #     self.put()
+    #     return self.attempts_remaining
+
+    # def update_history(self, guess):
+    #     """Adds user guess to history of question, returns guess_history"""
+    #     # TODO: need to test this.  Verify I can directly append and then need to put()
+    #     self.guess_history.append(guess)
+    #     self.put()
+    #     return self.guess_history
+
+    def end_question(self, correct=False):
+        """Ends the question. Updates score if correct, based on attempts_remaining"""
+        self.question_over = True
+        self.guessed_correct = correct
+        self.put()
+        # if correct:
+        #     self.guessed_correct = True
+        #     question_score = gl.get_question_score(self)
+
+        # TODO: get parent's score entity.
+        # Udpate parent's score entity.
+        # actually, probable have game_logic update score.
+
+
+# TODO: Score model
+class Score(ndb.Model):
+    """ Score object
+    - history of questions for the game.
+    - date (for end of game, including cancel)
+    - parent is game?
+    - score for the game.  (will be an updated total)
+    - has user
+    """

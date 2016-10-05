@@ -52,6 +52,8 @@ class GuessLocationApi(remote.Service):
     )
     def create_user(self, request):
         """Create a User.  Requires unique username"""
+        if models.User.query(User.name == name).get():
+            raise endpoints.ConflictException('A user with that name already exists!')
 
         user = models.User.add_user(request.user_name, request.email)
         return forms.UserForm(user_name=user.name, email=user.email)
@@ -84,7 +86,7 @@ class GuessLocationApi(remote.Service):
         game = utils.get_by_urlsafe(request.websafe_game_key, models.Game)
 
         if game.game_over:
-            return game.to_form('Game is already over!  Try another one!')
+            raise endpoints.BadRequestException('Game is already over!  Try another one!')
 
         # NOTE: shouldn't need this one; game should either have active or be in game_over status.  Shouldn't have the case where this is necessary.
         # if game.cities_asked >= gl.MAX_CITY_QUESTIONS:
@@ -122,8 +124,24 @@ class GuessLocationApi(remote.Service):
 
         """
         question = utils.get_by_urlsafe(request.websafe_question_key, models.CityQuestion)
+        guess = request.city_guess
 
-        message = 'Question retrieved. Your guess: ' + request.city_guess
+        if question.question_over:
+            return question.to_form('This question is resolved!  Try another question.')
+
+        game_over, question_over, correct = gl.manage_city_question_attempt(question, guess)
+
+        message = 'Your guess: ' + guess
+        if correct:
+            message += '\n\nCorrect!  Good job!'
+        else:
+            message += '\n\nWrong answer!  Try again!'
+
+        if question_over and not correct:
+            message += '\n\nToo bad!  Try another question.'
+
+        if game_over:
+            message += '\n\nGame over!  Start a new game!'
 
         return question.to_form(message)
 

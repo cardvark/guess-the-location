@@ -24,10 +24,9 @@ import endpoints
 
 # Game constants
 SCORE_DICT = {
-    3: 10,
-    2: 5,
-    1: 2,
-    0: 0
+    2: 10,
+    1: 5,
+    0: 2
 }
 
 # TODO: Implement use of this dict.
@@ -115,6 +114,7 @@ def get_new_city_question(game):
     )
 
     # Update the game's data
+    # TODO: Move this over to City entity method.
     game.last_cities = recent_cities
     game.cities_asked = cities_asked + 1
     game.monuments_list = previous_monuments
@@ -138,7 +138,7 @@ def get_allowed_properties(city_question):
 
 # TODO: pass to user map and info parameters based on # of tries / attempts remaining.
 def evaluate_question_response(city_question, form):
-    """ Evaluate appropriate response based on CityQuestion entity properties
+    """Evaluate appropriate response based on CityQuestion entity properties
 
     :param city_question: CityQuestion object
     :param form: CityQuestionForm object
@@ -156,5 +156,45 @@ def evaluate_question_response(city_question, form):
     return form
 
 
-def check_city_question_attempt(city_question, guess):
-    pass
+def check_city_question_guess(city_question, guess):
+    """Compare correct city with user guess, returns boolean and message"""
+    correct_city = city_question.city_name.lower()
+    user_guess = guess.lower()
+
+    return correct_city == user_guess
+
+
+# TODO - debating where and how to handle this functionality.
+def manage_city_question_attempt(city_question, guess):
+    """ """
+    # might move exception to API.
+    if city_question.attempts_remaining <= 0:
+        raise endpoints.BadRequestException('No attempts remaining!')
+
+    game_over = False
+    question_over = False
+    guess_correct = check_city_question_guess(city_question, guess)
+    parent_game = city_question.key.parent().get()
+    attempts_remaining = city_question.attempt_update(guess)
+
+    if guess_correct or attempts_remaining <= 0:
+        city_question.end_question(guess_correct)
+        question_score = get_question_score(city_question)
+        question_over = True
+        # To be implemented, somehow:
+        # game_score = models.Score.get_from_game(parent_game)
+        game_over = parent_game.end_question_update()
+
+        if game_over:
+            parent_game.end_game()
+
+    return game_over, question_over, guess_correct
+
+
+def get_question_score(city_question):
+    """Evaluates question for points received"""
+    score = 0
+    if city_question.guessed_correct:
+        score = SCORE_DICT[city_question.attempts_remaining]
+
+    return score

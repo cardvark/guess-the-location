@@ -76,16 +76,27 @@ class PlayGroundHandler(webapp2.RequestHandler):
 
         game = utils.get_by_urlsafe('aghkZXZ-Tm9uZXIRCxIER2FtZRiAgICAgODXCgw', models.Game)
 
+        question = utils.get_by_urlsafe('aghkZXZ-Tm9uZXIqCxIER2FtZRiAgICAgODXCgwLEgxDaXR5UXVlc3Rpb24YgICAgIDg9woM', models.CityQuestion)
+        print question.question_over
+        question.end_question()
+        print question.question_over
+        question.question_over = False
+        question.put()
+        print question.question_over
+
+        # print question.city_name
+        # print question.key.parent().get()
+
         # print game.last_cities
         # print game.monuments_list
 
         # new_city_question = gl.get_new_city_question(game)
 
-        question = game.active_question.get()
-        question.attempts_remaining = 3
-        question.put()
-        print question.city_name, question.monument.get().name
-        print question.to_form('Hey, that worked')
+        # question = game.active_question.get()
+        # question.attempts_remaining = 3
+        # question.put()
+        # print question.city_name, question.monument.get().name
+        # print question.to_form('Hey, that worked')
 
         # gl.evaluate_question_response(question)
         # print new_city_question
