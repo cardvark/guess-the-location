@@ -74,7 +74,7 @@ class PlayGroundHandler(webapp2.RequestHandler):
         """General testing ground"""
         # print models.City.get_available_regions()
 
-        game = utils.get_by_urlsafe('aghkZXZ-Tm9uZXIRCxIER2FtZRiAgICAgODXCgw', models.Game)
+        game = utils.get_by_urlsafe('aghkZXZ-Tm9uZXIRCxIER2FtZRiAgICAgOD3CQw', models.Game)
 
         question = utils.get_by_urlsafe('aghkZXZ-Tm9uZXIqCxIER2FtZRiAgICAgODXCgwLEgxDaXR5UXVlc3Rpb24YgICAgIDg9woM', models.CityQuestion)
         print question.question_over

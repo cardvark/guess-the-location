@@ -130,7 +130,9 @@ def get_new_city_question(game):
 def get_allowed_properties(city_question):
     """"""
     allowed_list = []
-    for i in range(city_question.attempts_remaining, city_question.attempts_allowed + 1):
+    start_value = 0 if city_question.question_over else city_question.attempts_remaining
+
+    for i in range(start_value, city_question.attempts_allowed + 1):
         allowed_list += MONUMENT_PROPERTIES_UNLOCKS_DICT[i]
 
     return allowed_list
@@ -142,16 +144,20 @@ def evaluate_question_response(city_question, form):
 
     :param city_question: CityQuestion object
     :param form: CityQuestionForm object
-    :return: form with allowed monument properties and min zoom.
+    :return: form with allowed monument properties, min zoom and score if question_over.
 
     """
     monument = city_question.monument.get()
     allowed_properties = get_allowed_properties(city_question)
 
+    setattr(form, 'min_zoom', MINZOOM_DICT[city_question.attempts_remaining])
+
+    if city_question.question_over:
+        setattr(form, 'question_score', get_question_score(city_question))
+
+
     for prop in allowed_properties:
         setattr(form, prop, getattr(monument, prop))
-
-    setattr(form, 'min_zoom', MINZOOM_DICT[city_question.attempts_remaining])
 
     return form
 

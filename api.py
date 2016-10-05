@@ -133,15 +133,15 @@ class GuessLocationApi(remote.Service):
 
         message = 'Your guess: ' + guess
         if correct:
-            message += '\n\nCorrect!  Good job!'
+            message += '<br><br>Correct!  Good job!'
         else:
-            message += '\n\nWrong answer!  Try again!'
+            message += '<br><br>Wrong answer!  Try again!'
 
         if question_over and not correct:
-            message += '\n\nToo bad!  Try another question.'
+            message += '<br><br>Out of attempts!  The correct answer was: ' + question.city_name
 
         if game_over:
-            message += '\n\nGame over!  Start a new game!'
+            message += '<br><br>Game over!  Start a new game!'
 
         return question.to_form(message)
 

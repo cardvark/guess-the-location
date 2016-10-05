@@ -46,7 +46,8 @@ class CityQuestionForm(messages.Message):
     img_suffix = messages.StringField(7)
     url = messages.StringField(8)
     attempts_remaining = messages.IntegerField(9)
-    message = messages.StringField(10)
+    question_score = messages.IntegerField(10)
+    message = messages.StringField(11)
 
 
 class QuestionAttemptForm(messages.Message):
