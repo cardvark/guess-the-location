@@ -62,7 +62,10 @@ var ViewModel = function() {
     self.monumentName = ko.observable();
 
     // Feedback observables.
-    self.genericFeedback = ko.observable();
+    var startingHtml = 'Create a new user and start a game!';
+    startingHtml += '<br><br>Guess the city from the map and a random monument.';
+    startingHtml += '<br><br>Three tries per city. A wrong answer provides more information but lowers the score.';
+    self.genericFeedback = ko.observable(startingHtml);
     self.monumentInfoFeedback = ko.observable();
 
     // Create User input values
@@ -177,7 +180,7 @@ var ViewModel = function() {
                 // self.getQuestionGameKeyInput( '' );
 
                 // map.minZoom(response.min_zoom);
-                console.log( response );
+                // console.log( response );
                 map.setOptions( {minZoom: parseInt( response.min_zoom) } );
                 map.setZoom( parseInt( response.min_zoom ) );
                 var newLatLng = new google.maps.LatLng({
@@ -205,7 +208,7 @@ var ViewModel = function() {
         var question_key = self.sendGuessQuestionKeyInput();
         var city_guess = self.sendGuessCityInput();
         var feedback = '';
-        var imageHtml = '<img src="{{url}}" alt="monument image">';
+        var imageHtml = 'Monument Image: <br><img src="{{url}}" alt="monument image">';
 
         self.isLoading( true );
 
@@ -223,7 +226,7 @@ var ViewModel = function() {
                 self.sendGuessCityInput( '' );
 
                 // map.minZoom(response.min_zoom);
-                console.log( response );
+                // console.log( response );
                 map.setOptions( {minZoom: parseInt( response.min_zoom) } );
                 map.setZoom( parseInt( response.min_zoom ) );
                 var newLatLng = new google.maps.LatLng({
@@ -239,12 +242,22 @@ var ViewModel = function() {
                 }
 
                 if ( response.name ) {
-                    self.monumentName( response.name );
+                    self.monumentName( 'Monument name: ' + response.name );
                 }
 
                 feedback += response.message;
-                feedback += '<br>Question key: ' + response.urlsafe_city_key;
-                feedback += '<br>Attempts remaining: ' + response.attempts_remaining;
+
+                if ( response.question_score ){
+                    feedback += '<br>Correct answer: ' + response.city_name;
+                    feedback += '<br>Points earned: ' + response.question_score;
+                }
+                if ( response.game_over ) {
+                    // feedback += '<br>Game over!';
+                    feedback += '<br>Final score: ' + response.total_score;
+                } else {
+                    feedback += '<br>Attempts remaining: ' + response.attempts_remaining;
+                    feedback += '<br>Question key: ' + response.urlsafe_city_key;
+                }
             }
             self.isLoading( false );
             self.genericFeedback( feedback );
