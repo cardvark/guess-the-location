@@ -212,6 +212,7 @@ var ViewModel = function() {
             infoWindow.close();
             feedback += '<br>Correct answer: ' + response.city_name;
             feedback += '<br>Points earned: ' + response.question_score;
+            feedback += '<br> Cities remaining: ' + response.cities_remaining;
         }
         if ( response.game_over ) {
             // feedback += '<br>Game over!';
