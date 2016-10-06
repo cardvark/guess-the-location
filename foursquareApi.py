@@ -25,15 +25,6 @@ def get_url_from_id(venue_id):
         'client_secret': FOURSQUARE_CLIENT_SECRET,
         'v': '20130815'
     }
-    # query_params = urllib.urlencode(params)
-
-    # try:
-    #     response = urllib2.urlopen(api_url, query_params)
-    # except urllib2.URLError:
-    #     print 'Caught exception fetching get_url_from_id'
-    #     return
-
-    # response = json.load(response)
 
     try:
         response = requests.get(api_url, params=params)
@@ -41,8 +32,11 @@ def get_url_from_id(venue_id):
         print e
 
     response = response.json()
+    response = response.get('response')
+    venue = response.get('venue')
+    url = venue.get('canonicalUrl')
 
-    return response.get('response').get('venue').get('canonicalUrl')
+    return url
 
 
 def monuments_by_city(city):
@@ -98,7 +92,6 @@ def monuments_by_city(city):
         # Must do a specific page request to obtain the 'canonicalUrl'
 
         if image:
-
             if page_url:
                 page_url = page_url[0].get('canonicalUrl')
             else:

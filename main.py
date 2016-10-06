@@ -56,9 +56,9 @@ class BuildMonumentsDataHandler(webapp2.RequestHandler):
                 print city.city_name, mon.name
 
 
-class CronTasksHandler(webapp2.RequestHandler):
-    """Cron jobs into taskqueue"""
-    taskqueue.add(url='/jobs/build_monuments_data')
+# class CronTasksHandler(webapp2.RequestHandler):
+#     """Cron jobs into taskqueue"""
+#     taskqueue.add(url='/jobs/build_monuments_data')
 
 
 class PlayGroundHandler(webapp2.RequestHandler):
@@ -121,7 +121,7 @@ class PlayGroundHandler(webapp2.RequestHandler):
 
 app = webapp2.WSGIApplication([
     ('/jobs/build_city_data', BuildCityDataHandler),
-    ('/jobs/build_monuments_data', BuildMonumentsDataHandler),
-    ('/cron/task_trigger', CronTasksHandler),
+    ('/crons/build_monuments_data', BuildMonumentsDataHandler),
+    # ('/crons/task_trigger', CronTasksHandler),
     ('/jobs/playground', PlayGroundHandler)
 ], debug=True)

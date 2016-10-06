@@ -51,13 +51,14 @@ class QuestionResponseForm(messages.Message):
     img_prefix = messages.StringField(6)
     img_suffix = messages.StringField(7)
     url = messages.StringField(8)
-    guessed_correct = messages.BooleanField(9)
-    attempts_remaining = messages.IntegerField(10)
-    question_score = messages.IntegerField(11)
-    cities_remaining = messages.IntegerField(12)
-    total_score = messages.IntegerField(13)
-    game_over = messages.BooleanField(14)
-    message = messages.StringField(15)
+    city_name = messages.StringField(9)
+    guessed_correct = messages.BooleanField(10)
+    attempts_remaining = messages.IntegerField(11)
+    question_score = messages.IntegerField(12)
+    cities_remaining = messages.IntegerField(13)
+    total_score = messages.IntegerField(14)
+    game_over = messages.BooleanField(15)
+    message = messages.StringField(16)
 
 
 class QuestionAttemptForm(messages.Message):

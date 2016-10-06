@@ -140,6 +140,7 @@ def evaluate_question_response(city_question, form):
         setattr(form, 'min_zoom', MINZOOM_DICT[0])
         setattr(form, 'cities_remaining', parent_game.cities_remaining)
         setattr(form, 'guessed_correct', city_question.guessed_correct)
+        setattr(form, 'city_name', city_question.city_name)
         if parent_game.game_over:
             score_object = models.Score.get_from_parent(parent_game.key)
             setattr(form, 'total_score', score_object.total_score)

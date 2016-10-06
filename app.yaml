@@ -22,13 +22,17 @@ handlers:
   script: main.app
   login: admin
 
-- url: /jobs/build_monuments_data
+- url: /crons/build_monuments_data
   script: main.app
   login: admin
 
-- url: /crons/task_trigger
-  script: main.app
-  login: admin
+# - url: /jobs/build_monuments_data
+#   script: main.app
+#   login: admin
+
+# - url: /crons/task_trigger
+#   script: main.app
+#   login: admin
 
 - url: /jobs/playground
   script: main.app
