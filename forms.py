@@ -41,8 +41,8 @@ class GameForms(messages.Message):
 
 
 # Should match game_logic.MONUMENT_PROPERTIES_UNLOCKS_DICT
-class CityQuestionForm(messages.Message):
-    """CityQuestionForm -- response form"""
+class QuestionResponseForm(messages.Message):
+    """QuestionResponseForm -- response form for new city and guess submissions"""
     urlsafe_city_key = messages.StringField(1)
     lat = messages.FloatField(2)
     lng = messages.FloatField(3)
@@ -51,10 +51,13 @@ class CityQuestionForm(messages.Message):
     img_prefix = messages.StringField(6)
     img_suffix = messages.StringField(7)
     url = messages.StringField(8)
-    attempts_remaining = messages.IntegerField(9)
-    question_score = messages.IntegerField(10)
-    message = messages.StringField(11)
-    # TODO: Add question_over bool?
+    guessed_correct = messages.BooleanField(9)
+    attempts_remaining = messages.IntegerField(10)
+    question_score = messages.IntegerField(11)
+    cities_remaining = messages.IntegerField(12)
+    total_score = messages.IntegerField(13)
+    game_over = messages.BooleanField(14)
+    message = messages.StringField(15)
 
 
 class QuestionAttemptForm(messages.Message):

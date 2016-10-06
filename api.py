@@ -99,7 +99,7 @@ class GuessLocationApi(remote.Service):
     # Alt, it could be 'get question' - either gets current active, or creates new.
     @endpoints.method(
         request_message=QUESTION_GET_REQUEST,
-        response_message=forms.CityQuestionForm,
+        response_message=forms.QuestionResponseForm,
         path='get_question',
         name='get_question',
         http_method='GET'
@@ -126,7 +126,7 @@ class GuessLocationApi(remote.Service):
 
     @endpoints.method(
         request_message=QUESTION_ATTEMPT_POST_REQUEST,
-        response_message=forms.CityQuestionForm,
+        response_message=forms.QuestionResponseForm,
         path='submit_question_guess',
         name='submit_question_guess',
         http_method='POST'
@@ -139,7 +139,11 @@ class GuessLocationApi(remote.Service):
         guess = request.city_guess
 
         if question.question_over:
-            return question.to_form('This question is resolved!  Try another question.')
+            return question.to_form('This question is resolved!  Try another question.  Answer was: ' + question.city_name)
+
+        # Shouldn't occur; question should be over before this case can arise.
+        if city_question.attempts_remaining <= 0:
+            raise endpoints.BadRequestException('No attempts remaining!')
 
         game_over, question_over, correct = gl.manage_city_question_attempt(question, guess)
 

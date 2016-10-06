@@ -279,8 +279,8 @@ class CityQuestion(ndb.Model):
         return new_question
 
     def to_form(self, message):
-        """Returns a CityQuestionForm representation of the CityQuestion"""
-        form = forms.CityQuestionForm()
+        """Returns a QuestionResponseForm representation of the CityQuestion"""
+        form = forms.QuestionResponseForm()
         # Obtains allowed monument properties based on attempts remaining + minzoom
         form = gl.evaluate_question_response(self, form)
 

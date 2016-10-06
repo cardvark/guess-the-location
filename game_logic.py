@@ -20,7 +20,6 @@ Rules:
 
 import models
 import random
-import endpoints
 
 # Game constants
 SCORE_DICT = {
@@ -51,6 +50,7 @@ QUESTION_ATTEMPTS = 3  # Max 3 guess attempts per city question.
 
 
 def update_recent_cities(new_city_key, recent_cities):
+    """Update Game recent cities list"""
     recent_cities.append(new_city_key)
 
     if len(recent_cities) >= RECENT_CITIES_LIMIT:
@@ -81,13 +81,8 @@ def get_unique_random_key(prev_list, possible_list):
 def get_new_city_question(game):
     """Build and return a new CityQuestion entity"""
     # Gather game object data.
-    cities_remaining = game.cities_remaining
     recent_cities = game.last_cities
-    game_over_status = game.game_over
     previous_monuments = game.monuments_list
-
-    if game_over_status:
-        raise endpoints.BadRequestException('Game is already over!  Pick another.')
 
     # Get a new city.
     possible_cities = models.City.get_cities_by_regions(game.regions)
@@ -106,28 +101,18 @@ def get_new_city_question(game):
         QUESTION_ATTEMPTS
     )
 
-    # Update the game's data
-    # TODO: Move this over to Game entity method.
-    # game.last_cities = recent_cities
-    # game.cities_remaining = cities_remaining - 1
-    # game.monuments_list = previous_monuments
-    # game.active_question = new_city_question.key
-    # game.put()
-
+    # Update game
     game.new_question_update(
         recent_cities,
         new_monument_key,
         new_city_question.key
         )
 
-    print new_city_key.get().city_name
-    print new_monument_key.get().name
-
     return new_city_question
 
 
 def get_allowed_properties(city_question):
-    """"""
+    """Return form properties based on attempts remaining or question over"""
     allowed_list = []
     start_value = 0 if city_question.question_over else city_question.attempts_remaining
 
@@ -141,18 +126,24 @@ def evaluate_question_response(city_question, form):
     """Evaluate appropriate response based on CityQuestion entity properties
 
     :param city_question: CityQuestion object
-    :param form: CityQuestionForm object
+    :param form: QuestionResponseForm object
     :return: form with allowed monument properties, min zoom and score if question_over.
 
     """
     monument = city_question.monument.get()
     allowed_properties = get_allowed_properties(city_question)
 
-    # TODO: set min_zoom to lowest value in case of question over.
     setattr(form, 'min_zoom', MINZOOM_DICT[city_question.attempts_remaining])
-
     if city_question.question_over:
+        parent_game = city_question.key.parent().get()
         setattr(form, 'question_score', get_question_points(city_question))
+        setattr(form, 'min_zoom', MINZOOM_DICT[0])
+        setattr(form, 'cities_remaining', parent_game.cities_remaining)
+        setattr(form, 'guessed_correct', city_question.guessed_correct)
+        if parent_game.game_over:
+            score_object = models.Score.get_from_parent(parent_game.key)
+            setattr(form, 'total_score', score_object.total_score)
+            setattr(form, 'game_over', True)
 
     for prop in allowed_properties:
         setattr(form, prop, getattr(monument, prop))
@@ -168,13 +159,8 @@ def check_city_question_guess(city_question, guess):
     return correct_city == user_guess
 
 
-# TODO - debating where and how to handle this functionality.
 def manage_city_question_attempt(city_question, guess):
-    """ """
-    # might move exception to API.
-    if city_question.attempts_remaining <= 0:
-        raise endpoints.BadRequestException('No attempts remaining!')
-
+    """Evaluate user guess, update data and respond accordingly"""
     game_over = False
     question_over = False
     guess_correct = check_city_question_guess(city_question, guess)
@@ -197,7 +183,7 @@ def manage_city_question_attempt(city_question, guess):
 
 
 def get_question_points(city_question):
-    """Evaluates question for points received"""
+    """Evaluate question for points received"""
     score = 0
     if city_question.guessed_correct:
         score = SCORE_DICT[city_question.attempts_remaining]
