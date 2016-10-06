@@ -1,4 +1,6 @@
 var map = {};
+var marker = {};
+var infoWindow = {};
 
 function initMap() {
     var myLatLng = new google.maps.LatLng({lat: 37.769115, lng: -122.435745});
@@ -32,6 +34,16 @@ function initMap() {
         streetViewControl: false,
         minZoom: 4,
         maxZoom: 18
+    });
+
+    marker = new google.maps.Marker({
+        position: myLatLng,
+    });
+
+    infoWindow = new google.maps.InfoWindow();
+
+    map.addListener('click', function(){
+        infoWindow.close();
     });
 
     // var minZoom = 18;
@@ -97,7 +109,9 @@ var ViewModel = function() {
         var email = self.createEmailInput();
         var user_name = self.createUsernameInput();
         var feedback = '';
+
         self.isLoading( true );
+        marker.setMap( null );
 
         gapi.client.guess_the_location.create_user({
             email: email,
@@ -134,7 +148,8 @@ var ViewModel = function() {
         self.getQuestionGameKeyInput( '' );
         self.sendGuessQuestionKeyInput( '' );
 
-        self.isLoading( true);
+        marker.setMap( null );
+        self.isLoading( true );
 
         gapi.client.guess_the_location.new_game({
             user_name: user_name,
@@ -160,11 +175,61 @@ var ViewModel = function() {
         });
     };
 
+    function manageQuestionResponse(response, feedback) {
+        var imageHtml = 'Monument Image: <br><img src="{{url}}" alt="monument image">';
+        map.setOptions( {minZoom: parseInt( response.min_zoom) } );
+        map.setZoom( parseInt( response.min_zoom ) );
+        var newLatLng = new google.maps.LatLng({
+            lat: response.lat,
+            lng: response.lng
+        });
+        map.setCenter( newLatLng );
+
+        if ( response.img_prefix && response.img_suffix ) {
+            marker.setMap( map );
+            marker.setPosition( newLatLng );
+            marker.setAnimation( google.maps.Animation.DROP );
+            var imgUrl = response.img_prefix + '200x200' + response.img_suffix;
+            imageHtml = imageHtml.replace('{{url}}', imgUrl);
+            self.monumentImage( imageHtml );
+
+            infoWindow.setContent( self.monumentImage() );
+            infoWindow.open(map, marker);
+
+            marker.addListener('click', function(){
+                infoWindow.open(map, marker);
+            });
+        }
+
+        if ( response.name ) {
+            self.monumentName( 'Monument name: ' + response.name );
+            infoWindow.setContent( self.monumentName() + '<br>' + self.monumentImage() );
+        }
+
+        feedback += response.message;
+
+        if ( response.question_score ){
+            infoWindow.close();
+            feedback += '<br>Correct answer: ' + response.city_name;
+            feedback += '<br>Points earned: ' + response.question_score;
+        }
+        if ( response.game_over ) {
+            // feedback += '<br>Game over!';
+            feedback += '<br>Final score: ' + response.total_score;
+        } else {
+            feedback += '<br>Attempts remaining: ' + response.attempts_remaining;
+            feedback += '<br>Question key: ' + response.urlsafe_city_key;
+        }
+
+        return feedback;
+    }
+
     self.getQuestion = function() {
         var game_key = self.getQuestionGameKeyInput();
         var feedback = '';
 
         self.isLoading( true );
+        marker.setMap( null );
 
         // reset some fields:
         self.monumentImage( '' );
@@ -178,24 +243,25 @@ var ViewModel = function() {
                 feedback += self.errorResponse( response.error );
             } else {
                 // self.getQuestionGameKeyInput( '' );
+                feedback += manageQuestionResponse(response, feedback);
 
-                // map.minZoom(response.min_zoom);
-                // console.log( response );
-                map.setOptions( {minZoom: parseInt( response.min_zoom) } );
-                map.setZoom( parseInt( response.min_zoom ) );
-                var newLatLng = new google.maps.LatLng({
-                    lat: response.lat,
-                    lng: response.lng
-                });
-                map.setCenter( newLatLng );
+                // // map.minZoom(response.min_zoom);
+                // // console.log( response );
+                // map.setOptions( {minZoom: parseInt( response.min_zoom) } );
+                // map.setZoom( parseInt( response.min_zoom ) );
+                // var newLatLng = new google.maps.LatLng({
+                //     lat: response.lat,
+                //     lng: response.lng
+                // });
+                // map.setCenter( newLatLng );
 
-                // self.minZoom(response.min_zoom);
-                // self.lat(response.lat);
-                // self.lng(response.lng);
+                // // self.minZoom(response.min_zoom);
+                // // self.lat(response.lat);
+                // // self.lng(response.lng);
 
-                feedback += response.message;
-                feedback += '<br>Question key: ' + response.urlsafe_city_key;
-                feedback += '<br>Attempts remaining: ' + response.attempts_remaining;
+                // feedback += response.message;
+                // feedback += '<br>Question key: ' + response.urlsafe_city_key;
+                // feedback += '<br>Attempts remaining: ' + response.attempts_remaining;
 
                 self.sendGuessQuestionKeyInput( response.urlsafe_city_key );
             }
@@ -208,9 +274,9 @@ var ViewModel = function() {
         var question_key = self.sendGuessQuestionKeyInput();
         var city_guess = self.sendGuessCityInput();
         var feedback = '';
-        var imageHtml = 'Monument Image: <br><img src="{{url}}" alt="monument image">';
 
         self.isLoading( true );
+        marker.setMap( null );
 
         // reset some fields:
         self.monumentImage( '' );
@@ -224,40 +290,7 @@ var ViewModel = function() {
                 feedback += self.errorResponse( response.error );
             } else {
                 self.sendGuessCityInput( '' );
-
-                // map.minZoom(response.min_zoom);
-                // console.log( response );
-                map.setOptions( {minZoom: parseInt( response.min_zoom) } );
-                map.setZoom( parseInt( response.min_zoom ) );
-                var newLatLng = new google.maps.LatLng({
-                    lat: response.lat,
-                    lng: response.lng
-                });
-                map.setCenter( newLatLng );
-
-                if ( response.img_prefix && response.img_suffix ) {
-                    var imgUrl = response.img_prefix + '200x200' + response.img_suffix;
-                    imageHtml = imageHtml.replace('{{url}}', imgUrl);
-                    self.monumentImage( imageHtml );
-                }
-
-                if ( response.name ) {
-                    self.monumentName( 'Monument name: ' + response.name );
-                }
-
-                feedback += response.message;
-
-                if ( response.question_score ){
-                    feedback += '<br>Correct answer: ' + response.city_name;
-                    feedback += '<br>Points earned: ' + response.question_score;
-                }
-                if ( response.game_over ) {
-                    // feedback += '<br>Game over!';
-                    feedback += '<br>Final score: ' + response.total_score;
-                } else {
-                    feedback += '<br>Attempts remaining: ' + response.attempts_remaining;
-                    feedback += '<br>Question key: ' + response.urlsafe_city_key;
-                }
+                feedback += manageQuestionResponse(response, feedback);
             }
             self.isLoading( false );
             self.genericFeedback( feedback );
