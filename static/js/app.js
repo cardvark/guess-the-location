@@ -2,7 +2,7 @@ var map = {};
 
 function initMap() {
     var myLatLng = new google.maps.LatLng({lat: 37.769115, lng: -122.435745});
-    var zoom = 16;
+    var zoom = 12;
 
     map = new google.maps.Map(document.getElementById('map'), {
         zoom: zoom,
@@ -30,7 +30,7 @@ function initMap() {
         scrollwheel: false,
         disableDoubleClickZoom: true,
         streetViewControl: false,
-        minZoom: 16,
+        minZoom: 4,
         maxZoom: 18
     });
 
@@ -48,6 +48,7 @@ function initMap() {
 
 var ViewModel = function() {
     var self = this;
+    self.isLoading = ko.observable( false );
 
     // Setup map observables
     // self.zoom = ko.observable(16);
@@ -93,6 +94,7 @@ var ViewModel = function() {
         var email = self.createEmailInput();
         var user_name = self.createUsernameInput();
         var feedback = '';
+        self.isLoading( true );
 
         gapi.client.guess_the_location.create_user({
             email: email,
@@ -108,6 +110,7 @@ var ViewModel = function() {
                 self.createEmailInput( '' );
             }
             // self.createUsernameInput( '' );
+            self.isLoading( false );
             self.genericFeedback( feedback );
         });
     };
@@ -128,6 +131,8 @@ var ViewModel = function() {
         self.getQuestionGameKeyInput( '' );
         self.sendGuessQuestionKeyInput( '' );
 
+        self.isLoading( true);
+
         gapi.client.guess_the_location.new_game({
             user_name: user_name,
             regions: regions_arr,
@@ -147,6 +152,7 @@ var ViewModel = function() {
 
                 self.getQuestionGameKeyInput(response.urlsafe_game_key);
             }
+            self.isLoading( false );
             self.genericFeedback( feedback );
         });
     };
@@ -154,6 +160,8 @@ var ViewModel = function() {
     self.getQuestion = function() {
         var game_key = self.getQuestionGameKeyInput();
         var feedback = '';
+
+        self.isLoading( true );
 
         // reset some fields:
         self.monumentImage( '' );
@@ -188,6 +196,7 @@ var ViewModel = function() {
 
                 self.sendGuessQuestionKeyInput( response.urlsafe_city_key );
             }
+            self.isLoading( false );
             self.genericFeedback( feedback );
         });
     };
@@ -197,6 +206,8 @@ var ViewModel = function() {
         var city_guess = self.sendGuessCityInput();
         var feedback = '';
         var imageHtml = '<img src="{{url}}" alt="monument image">';
+
+        self.isLoading( true );
 
         // reset some fields:
         self.monumentImage( '' );
@@ -235,10 +246,23 @@ var ViewModel = function() {
                 feedback += '<br>Question key: ' + response.urlsafe_city_key;
                 feedback += '<br>Attempts remaining: ' + response.attempts_remaining;
             }
+            self.isLoading( false );
             self.genericFeedback( feedback );
         });
     };
+
+    // Fires anytime anything changes
+    // ko.computed(function () {
+    //     localStorage.setItem('guess-the-location', ko.toJSON( this ));
+    //     console.log(localStorage.getItem('guess-the-location'));
+    // }).bind(this).extend({
+    //     rateLimit: {timeout: 500, method: 'notifyWhenChangesStop'}
+    // });
 };
+
+// var existing = ko.utils.parseJson(localStorage.getItem('guess-the-location'));
+
+// var ViewM = existing || new ViewModel();
 
 var ViewM = new ViewModel();
 

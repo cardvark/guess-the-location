@@ -58,3 +58,13 @@
     overflow-y: scroll;
     width: 66%;
 }
+
+#loading {
+    padding: 6px 12px;
+    border: solid 1px #222;
+    background-color: #444;
+    color: #ddd;
+    top: 0;
+    left: 0;
+    border-radius: 2px;
+}

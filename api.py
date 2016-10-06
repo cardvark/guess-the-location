@@ -142,11 +142,10 @@ class GuessLocationApi(remote.Service):
             return question.to_form('This question is resolved!  Try another question.  Answer was: ' + question.city_name)
 
         # Shouldn't occur; question should be over before this case can arise.
-        if city_question.attempts_remaining <= 0:
+        if question.attempts_remaining <= 0:
             raise endpoints.BadRequestException('No attempts remaining!')
 
         game_over, question_over, correct = gl.manage_city_question_attempt(question, guess)
-
         message = 'Your guess: ' + guess
         if correct:
             message += '<br><br>Correct!  Good job!'

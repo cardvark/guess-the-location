@@ -24,6 +24,7 @@
           <h3>Guess the City!</h3>
         </div>
         <div class="row info-space">
+          <div id="loading" data-bind="visible: isLoading">Loading...</div>
           <h4 data-bind="visible: monumentImage">Monument Information</h4>
           <div data-bind="html: monumentImage"></div>
           <br>
