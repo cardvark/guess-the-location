@@ -113,16 +113,14 @@ class GuessLocationApi(remote.Service):
         if game.game_over:
             raise endpoints.BadRequestException('Game is already over!  Try another one!')
 
-        # NOTE: shouldn't need this one; game should either have active or be in game_over status.  Shouldn't have the case where this is necessary.
-        # if game.cities_asked >= gl.MAX_CITY_QUESTIONS:
-        #     return game.to_form('Already generated max questions for this game!')
-
         if game.active_question:
             question = game.active_question.get()
             message = 'Active question in progress!'
         else:
             question = gl.get_new_city_question(game)
             message = 'New question!  Good luck!'
+
+        # TODO: obtain and provide info on how many questions remaining.
 
         return question.to_form(message)
 

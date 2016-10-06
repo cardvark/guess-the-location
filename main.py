@@ -14,15 +14,16 @@ __author__ = 'wang.james.j@gmail.com'
 
 import webapp2
 import sys
-from google.appengine.api import app_identity
-from google.appengine.api import mail
+# from google.appengine.api import app_identity
+# from google.appengine.api import mail
+from google.appengine.api import taskqueue
 from api import GuessLocationApi
 import models
 import foursquareApi as fApi
 import utils
 import game_logic as gl
 from google.appengine.ext import ndb
-import random
+# import random
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -41,6 +42,7 @@ class BuildCityDataHandler(webapp2.RequestHandler):
 class BuildMonumentsDataHandler(webapp2.RequestHandler):
     def get(self):
         """Builds Monument entities via Foursquare API"""
+        # TODO: potentially remove monuments not in the API results.
 
         cities_list = models.City.query().fetch()
         for city in cities_list:
@@ -52,6 +54,11 @@ class BuildMonumentsDataHandler(webapp2.RequestHandler):
             for monument in monuments_list:
                 mon = models.Monument.add_monument(monument, city.key)
                 print city.city_name, mon.name
+
+
+class CronTasksHandler(webapp2.RequestHandler):
+    """Cron jobs into taskqueue"""
+    taskqueue.add(url='/jobs/build_monuments_data')
 
 
 class PlayGroundHandler(webapp2.RequestHandler):
@@ -112,9 +119,9 @@ class PlayGroundHandler(webapp2.RequestHandler):
         #     print monument.name
 
 
-
 app = webapp2.WSGIApplication([
     ('/jobs/build_city_data', BuildCityDataHandler),
     ('/jobs/build_monuments_data', BuildMonumentsDataHandler),
+    ('/cron/task_trigger', CronTasksHandler),
     ('/jobs/playground', PlayGroundHandler)
 ], debug=True)

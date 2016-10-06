@@ -50,12 +50,6 @@ MAX_CITY_QUESTIONS = 5  # Max 5 city questions per game
 QUESTION_ATTEMPTS = 3  # Max 3 guess attempts per city question.
 
 
-# TODO: set game_over status to true upon final question result.
-# TODO: question completion handling
-# TODO: set active_question to None upon each question completion.
-# TODO: Update a score for a question upon each question completion.
-
-
 def update_recent_cities(new_city_key, recent_cities):
     recent_cities.append(new_city_key)
 
@@ -65,7 +59,6 @@ def update_recent_cities(new_city_key, recent_cities):
     return recent_cities
 
 
-# TODO: further testing. want to ensure this is working as intended.
 def get_unique_random_key(prev_list, possible_list):
     """Return a random item from possible_list that was not in prev_list
 
@@ -88,7 +81,7 @@ def get_unique_random_key(prev_list, possible_list):
 def get_new_city_question(game):
     """Build and return a new CityQuestion entity"""
     # Gather game object data.
-    cities_asked = game.cities_asked
+    cities_remaining = game.cities_remaining
     recent_cities = game.last_cities
     game_over_status = game.game_over
     previous_monuments = game.monuments_list
@@ -104,7 +97,6 @@ def get_new_city_question(game):
     # Get a monument.
     monuments_list = new_city_key.get().get_monuments()
     new_monument_key = get_unique_random_key(previous_monuments, monuments_list)
-    previous_monuments.append(new_monument_key.urlsafe())
 
     # Create new city question
     new_city_question = models.CityQuestion.new_city_question(
@@ -116,11 +108,17 @@ def get_new_city_question(game):
 
     # Update the game's data
     # TODO: Move this over to Game entity method.
-    game.last_cities = recent_cities
-    game.cities_asked = cities_asked + 1
-    game.monuments_list = previous_monuments
-    game.active_question = new_city_question.key
-    game.put()
+    # game.last_cities = recent_cities
+    # game.cities_remaining = cities_remaining - 1
+    # game.monuments_list = previous_monuments
+    # game.active_question = new_city_question.key
+    # game.put()
+
+    game.new_question_update(
+        recent_cities,
+        new_monument_key,
+        new_city_question.key
+        )
 
     print new_city_key.get().city_name
     print new_monument_key.get().name
@@ -150,6 +148,7 @@ def evaluate_question_response(city_question, form):
     monument = city_question.monument.get()
     allowed_properties = get_allowed_properties(city_question)
 
+    # TODO: set min_zoom to lowest value in case of question over.
     setattr(form, 'min_zoom', MINZOOM_DICT[city_question.attempts_remaining])
 
     if city_question.question_over:

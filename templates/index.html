@@ -20,9 +20,11 @@
   <div class="container-fluid">
     <div class="row main-row">
       <div class="col-md-4 left-pane">
+        <div class="row">
+          <h3>Guess the City!</h3>
+        </div>
         <div class="row info-space">
-          <h4>Info Space</h4>
-          <div data-bind="html: monumentInfoFeedback"></div>
+          <h4 data-bind="visible: monumentImage">Monument Information</h4>
           <div data-bind="html: monumentImage"></div>
           <br>
           <div data-bind="html: monumentName"></div>
@@ -64,7 +66,7 @@
         <div class="row">
           <h4>Get Question</h4>
           <form data-bind="submit: getQuestion">
-            game_key, aghkZXZ-Tm9uZXIRCxIER2FtZRiAgICAgIDwCQw
+            game_key
             <input placeholder="String" data-bind="value: getQuestionGameKeyInput">
             <br>
             <button type="submit">Submit</button>
@@ -76,7 +78,6 @@
           <h4>Submit Guess</h4>
           <form data-bind="submit: sendGuess">
             question key
-            <br> aghkZXZ-Tm9uZXIqCxIER2FtZRiAgICAgICICwwLEgxDaXR5UXVlc3Rpb24YgICAgICAyAoM
             <input placeholder="String" data-bind="value: sendGuessQuestionKeyInput">
             <br>
             city guess

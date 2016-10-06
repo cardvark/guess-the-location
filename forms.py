@@ -54,6 +54,7 @@ class CityQuestionForm(messages.Message):
     attempts_remaining = messages.IntegerField(9)
     question_score = messages.IntegerField(10)
     message = messages.StringField(11)
+    # TODO: Add question_over bool?
 
 
 class QuestionAttemptForm(messages.Message):

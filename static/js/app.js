@@ -97,7 +97,7 @@ var ViewModel = function() {
         gapi.client.guess_the_location.create_user({
             email: email,
             user_name: user_name
-        }).execute(function (response) {
+        }).execute(function ( response ) {
             if (response.error) {
                 // var errorMessage = response.error.message || '';
                 feedback += self.errorResponse( response.error );
@@ -107,7 +107,7 @@ var ViewModel = function() {
                 feedback += '<br>Email: ' + email;
                 self.createEmailInput( '' );
             }
-            self.createUsernameInput( '' );
+            // self.createUsernameInput( '' );
             self.genericFeedback( feedback );
         });
     };
@@ -118,16 +118,22 @@ var ViewModel = function() {
         var cities_total = self.newGameTotalCitiesInput();
         var feedback = '';
 
-        var regions_arr = regions.split(',').map(function (word) {
+        var regions_arr = regions.split( ',' ).map(function ( word ) {
             return $.trim(word);
         });
+
+        // reset some fields:
+        self.monumentImage( '' );
+        self.monumentName( '' );
+        self.getQuestionGameKeyInput( '' );
+        self.sendGuessQuestionKeyInput( '' );
 
         gapi.client.guess_the_location.new_game({
             user_name: user_name,
             regions: regions_arr,
             cities_total: cities_total
-        }).execute(function (response) {
-            if (response.error) {
+        }).execute(function ( response ) {
+            if ( response.error ) {
                 feedback += self.errorResponse( response.error );
             } else {
                 // self.newGameUsernameInput = ko.observable( '' );
@@ -149,10 +155,15 @@ var ViewModel = function() {
         var game_key = self.getQuestionGameKeyInput();
         var feedback = '';
 
+        // reset some fields:
+        self.monumentImage( '' );
+        self.monumentName( '' );
+        self.sendGuessQuestionKeyInput( '' );
+
         gapi.client.guess_the_location.get_question({
             websafe_game_key: game_key
-        }).execute(function (response) {
-            if (response.error) {
+        }).execute(function ( response ) {
+            if ( response.error ) {
                 feedback += self.errorResponse( response.error );
             } else {
                 // self.getQuestionGameKeyInput( '' );
@@ -187,11 +198,15 @@ var ViewModel = function() {
         var feedback = '';
         var imageHtml = '<img src="{{url}}" alt="monument image">';
 
+        // reset some fields:
+        self.monumentImage( '' );
+        self.monumentName( '' );
+
         gapi.client.guess_the_location.submit_question_guess({
             websafe_question_key: question_key,
             city_guess: city_guess
         }).execute(function (response) {
-            if (response.error) {
+            if ( response.error ) {
                 feedback += self.errorResponse( response.error );
             } else {
                 self.sendGuessCityInput( '' );
@@ -206,13 +221,13 @@ var ViewModel = function() {
                 });
                 map.setCenter( newLatLng );
 
-                if (response.img_prefix && response.img_suffix) {
+                if ( response.img_prefix && response.img_suffix ) {
                     var imgUrl = response.img_prefix + '200x200' + response.img_suffix;
                     imageHtml = imageHtml.replace('{{url}}', imgUrl);
                     self.monumentImage( imageHtml );
                 }
 
-                if (response.name) {
+                if ( response.name ) {
                     self.monumentName( response.name );
                 }
 

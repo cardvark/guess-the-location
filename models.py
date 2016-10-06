@@ -170,16 +170,13 @@ class Monument(ndb.Model):
 
 class Game(ndb.Model):
     """Game object"""
-    # TODO: changes 'cities_asked' and all instances to 'cities_remaining'
-    # Update logic accordingly.
-
     user = ndb.KeyProperty(required=True, kind='User')
     game_over = ndb.BooleanProperty(default=False)
     regions = ndb.StringProperty(repeated=True)
     last_cities = ndb.StringProperty(repeated=True)
     monuments_list = ndb.StringProperty(repeated=True)
     cities_total = ndb.IntegerProperty(required=True, default=5)
-    cities_asked = ndb.IntegerProperty(default=0)
+    cities_remaining = ndb.IntegerProperty()
     active_question = ndb.KeyProperty(kind='CityQuestion')
 
     @classmethod
@@ -189,6 +186,7 @@ class Game(ndb.Model):
             user=user.key,
             regions=regions_list,
             cities_total=cities_total,
+            cities_remaining=cities_total
         )
         game.put()
 
@@ -222,7 +220,7 @@ class Game(ndb.Model):
         form.urlsafe_game_key = self.key.urlsafe()
         form.cities_total = self.cities_total
         form.user_name = self.user.get().name
-        form.cities_remaining = self.cities_total - self.cities_asked
+        form.cities_remaining = self.cities_remaining
         if message:
             form.message = message
 
@@ -232,29 +230,22 @@ class Game(ndb.Model):
         return form
 
     # May deprecate, not sure yet.
-    def new_question_update(self, recent_cities, cities_asked, monuments_list, active_question):
-        """Updates Game entity based on new question.
-        - Updates recent_cities list
-        - Increments cities_asked
-        - adds monument to list.
-        - adds active_question key to active_question
+    def new_question_update(self, recent_cities, new_monument_key, active_question_key):
+        """Updates Game entity based on new question"""
+        self.last_cities = recent_cities
+        self.cities_remaining -= 1
+        self.monuments_list.append(new_monument_key.urlsafe())
+        self.active_question = active_question_key
+        self.put()
 
-        """
-        pass
+        return self
 
     def end_question_update(self):
-        """Updates Game entity based on finished question.
-        - set active_question to None
-        """
-        # redo this.  Class methods should update the object.
-        # Don't want class methods to cause chain reaction of methods.
-        # esp. to other methods.
-        # no updating score from another class's method.
-        # can instead return whether asked has surpassed total.
+        """Updates Game entity based on finished question"""
         self.active_question = None
         self.put()
 
-        return self.cities_asked >= self.cities_total
+        return self.cities_remaining <= 0
 
     def end_game(self):
         """Ends game upon completion or cancel"""
