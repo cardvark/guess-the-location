@@ -22,65 +22,69 @@
       <div class="col-md-4 left-pane">
         <div class="row info-space">
           <h4>Info Space</h4>
-          <div data-bind="monument data info observable"></div>
-          <div data-bind="general feedback observable"></div>
+          <div data-bind="html: monumentInfoFeedback"></div>
+          <div data-bind="html: monumentImage"></div>
+          <br>
+          <div data-bind="html: monumentName"></div>
+          <div data-bind="html: genericFeedback"></div>
         </div>
         <div class="row">
           <h4>Create User</h4>
-          <form data-bind="submit: VM function">
+          <form data-bind="submit: createUser">
             Email
             <!-- should persist if error, both reset if accepted. -->
-            <input placeholder="String" data-bind="value: observable">
+            <input placeholder="String" data-bind="value: createEmailInput">
             <br>
             user_name
-            <input placeholder="String" data-bind="value: observable">
+            <input placeholder="String" data-bind="value: createUsernameInput">
             <br>
             <button type="submit">Submit</button>
           </form>
           <br>
-          <div data-bind="html: feedback observable"></div>
+          <!-- <div data-bind="html: feedback observable"></div> -->
           <!-- Should persist until new one is created. -->
         </div>
         <div class="row">
-          <h4>Create new game</h4>
-          <form data-bind="submit: VM function">
+          <h4>Create New Game</h4>
+          <form data-bind="submit: createNewGame">
             user_name
-            <input placeholder="String" data-bind="value: observable">
+            <input placeholder="String" data-bind="value: newGameUsernameInput">
             <br>
             regions
-            <input placeholder="Comma separated" data-bind="value: observable">
+            <input placeholder="Comma separated" data-bind="value: newGameRegionsInput">
             <br>
             Total cities (max 5) <!-- could change max to data-bind, maybe. -->
-            <input placeholder="Integer" data-bind="value: observable">
+            <input placeholder="Integer" data-bind="value: newGameTotalCitiesInput">
             <br>
             <button type="submit">Submit</button>
           </form>
           <br>
-          <div data-bind="html: feedback observable"></div>
+          <!-- <div data-bind="html: feedback observable"></div> -->
         </div>
         <div class="row">
           <h4>Get Question</h4>
-          <form data-bind="submit: VM function">
-            game_key
-            <input placeholder="String" data-bind="value: observable">
+          <form data-bind="submit: getQuestion">
+            game_key, aghkZXZ-Tm9uZXIRCxIER2FtZRiAgICAgIDwCQw
+            <input placeholder="String" data-bind="value: getQuestionGameKeyInput">
             <br>
             <button type="submit">Submit</button>
           </form>
           <br>
-          <div data-bind="html: feedback observable"></div>
+          <!-- <div data-bind="html: feedback observable"></div> -->
         </div>
         <div class="row">
           <h4>Submit Guess</h4>
-          <form data-bind="submit: VM function">
+          <form data-bind="submit: sendGuess">
             question key
-            <input placeholder="String" data-bind="value: observable">
+            <br> aghkZXZ-Tm9uZXIqCxIER2FtZRiAgICAgICICwwLEgxDaXR5UXVlc3Rpb24YgICAgICAyAoM
+            <input placeholder="String" data-bind="value: sendGuessQuestionKeyInput">
             <br>
             city guess
-            <input placeholder="String" data-bind="value: observable">
+            <input placeholder="String" data-bind="value: sendGuessCityInput">
             <button type="submit">Submit</button>
           </form>
           <br>
-          <div data-bind="html: feedback observable"></div>
+          <!-- <div data-bind="html: feedback observable"></div> -->
         </div>
 <!--         <div class="row">get_games_by_user: user_name, all_games true/false
           <h5>Get User's Games</h5>

@@ -31,7 +31,6 @@ sys.setdefaultencoding('utf-8')
 class BuildCityDataHandler(webapp2.RequestHandler):
     def get(self):
         """Builds the datastore City entities"""
-        # NOTE: temporarily commenting out this code.
 
         ndb.delete_multi(models.City.query().fetch(keys_only=True))
 
@@ -39,23 +38,9 @@ class BuildCityDataHandler(webapp2.RequestHandler):
             models.City.add_city(city_list[0], city_list[1], city_list[2])
 
 
-        # Get by ancestor works!
-        # city = City.get_city('San Francisco', 'United States', 'North America')
-
-        # monuments = city.get_monuments()
-        # # print monuments
-        # for monument in monuments:
-        #     print monument.name
-
-
 class BuildMonumentsDataHandler(webapp2.RequestHandler):
     def get(self):
         """Builds Monument entities via Foursquare API"""
-        # TODO: add ancestor link to city for monuments.
-        # update this script to include that info.
-        # need to do some double checking on how it works.
-
-        # ndb.delete_multi(Monument.query().fetch(keys_only=True))
 
         cities_list = models.City.query().fetch()
         for city in cities_list:
@@ -116,6 +101,16 @@ class PlayGroundHandler(webapp2.RequestHandler):
 
         # for city in cities:
         #     print city.key, city.city_name
+
+
+        # Get by ancestor works!
+        # city = City.get_city('San Francisco', 'United States', 'North America')
+
+        # monuments = city.get_monuments()
+        # # print monuments
+        # for monument in monuments:
+        #     print monument.name
+
 
 
 app = webapp2.WSGIApplication([

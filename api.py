@@ -4,6 +4,8 @@ api.py - game APIs.
 
 Guess the location game server-side Python App Engine
 
+Error checking for user inputs primarily handled here.
+
 """
 
 import logging
@@ -18,6 +20,9 @@ import game_logic as gl
 import utils
 import forms
 from settings import *
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 EMAIL_SCOPE = endpoints.EMAIL_SCOPE
 API_EXPLORER_CLIENT_ID = endpoints.API_EXPLORER_CLIENT_ID
@@ -54,8 +59,10 @@ class GuessLocationApi(remote.Service):
         http_method='POST'
     )
     def create_user(self, request):
-        """Create a User.  Requires unique username"""
-        if models.User.query(User.name == name).get():
+        """Create a User.  Requires unique username
+        :param request: user_name, email.
+        """
+        if models.User.query(models.User.name == request.user_name).get():
             raise endpoints.ConflictException('A user with that name already exists!')
 
         user = models.User.add_user(request.user_name, request.email)
@@ -69,7 +76,9 @@ class GuessLocationApi(remote.Service):
         http_method='POST'
     )
     def new_game(self, request):
-        """Create a new game"""
+        """Create a new game
+        :param request: user_name, regions, cities_total
+        """
         user = models.User.query(models.User.name == request.user_name).get()
         if not user:
             raise endpoints.NotFoundException('A User with that name does not exist!')
@@ -96,7 +105,9 @@ class GuessLocationApi(remote.Service):
         http_method='GET'
     )
     def get_question(self, request):
-        """Request question for a game.  Returns active or next question."""
+        """Request question for a game.  Returns active or next question.
+        :param request: websafe_game_key
+        """
         game = utils.get_by_urlsafe(request.websafe_game_key, models.Game)
 
         if game.game_over:
@@ -123,7 +134,9 @@ class GuessLocationApi(remote.Service):
         http_method='POST'
     )
     def submit_question_guess(self, request):
-        """Submit question and guess. Updates CityQuestion, Game, Score."""
+        """Submit question and guess. Updates CityQuestion, Game, Score.
+        :param request: websafe_question_key, city_guess
+        """
         question = utils.get_by_urlsafe(request.websafe_question_key, models.CityQuestion)
         guess = request.city_guess
 
@@ -154,7 +167,9 @@ class GuessLocationApi(remote.Service):
         http_method='GET'
     )
     def get_games_by_user(self, request):
-        """Get list of games (active or all) by user_name."""
+        """Get list of games (active or all) by user_name.
+        :param request: user_name
+        """
         user = models.User.query(models.User.name == request.user_name).get()
         if not user:
             raise endpoints.NotFoundException('A User with that name does not exist!')

@@ -26,7 +26,8 @@
 }
 
 .info-space {
-    min-height: 250px;
+    min-height: 100px;
+    border: solid black 1px;
 }
 
 /* Adapted from http://stackoverflow.com/a/38994995/3902579 */
