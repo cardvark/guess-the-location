@@ -24,6 +24,11 @@ class NewGameForm(messages.Message):
     cities_total = messages.IntegerField(3)
 
 
+class GameKeyForm(messages.Message):
+    """GameKeyForm -- inbound single game key"""
+    urlsafe_game_key = messages.StringField(1)
+
+
 class GameForm(messages.Message):
     """GameForm -- outbound Game form message"""
     urlsafe_game_key = messages.StringField(1)
@@ -31,7 +36,8 @@ class GameForm(messages.Message):
     user_name = messages.StringField(3)
     cities_remaining = messages.IntegerField(4)
     active_question = messages.StringField(5)
-    message = messages.StringField(6)
+    game_over = messages.BooleanField(6)
+    message = messages.StringField(7)
 
 
 class GameForms(messages.Message):

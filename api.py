@@ -31,12 +31,15 @@ NEW_USER_POST_REQUEST = endpoints.ResourceContainer(forms.UserForm)
 NEW_GAME_POST_REQUEST = endpoints.ResourceContainer(forms.NewGameForm)
 QUESTION_GET_REQUEST = endpoints.ResourceContainer(
     message_types.VoidMessage,
-    websafe_game_key=messages.StringField(1, required=True)
+    urlsafe_game_key=messages.StringField(1, required=True)
 )
 QUESTION_ATTEMPT_POST_REQUEST = endpoints.ResourceContainer(
     forms.QuestionAttemptForm,
-    websafe_question_key=messages.StringField(1, required=True)
+    urlsafe_question_key=messages.StringField(1, required=True)
 )
+# GAME_POST_REQUEST = endpoints.ResourceContainer(
+#     messages.Message(urlsafe_game_key=messages.StringField(1))
+# )
 # USER_GAMES_GET_REQUEST = endpoints.ResourceContainer(
 #     forms.UserGamesForm
 # )
@@ -52,7 +55,7 @@ class GuessLocationApi(remote.Service):
     """Guess the location game API"""
 
     @endpoints.method(
-        request_message=NEW_USER_POST_REQUEST,
+        request_message=forms.UserForm,
         response_message=forms.UserForm,
         path='user',
         name='create_user',
@@ -94,9 +97,6 @@ class GuessLocationApi(remote.Service):
 
         return game.to_form('New game created.  Best of luck!')
 
-    # TODO: maybe deprecate this in favor a of a "next_move" options.
-    # next_move should determine whether to create new question.
-    # Alt, it could be 'get question' - either gets current active, or creates new.
     @endpoints.method(
         request_message=QUESTION_GET_REQUEST,
         response_message=forms.QuestionResponseForm,
@@ -106,9 +106,9 @@ class GuessLocationApi(remote.Service):
     )
     def get_question(self, request):
         """Request question for a game.  Returns active or next question.
-        :param request: websafe_game_key
+        :param request: urlsafe_game_key
         """
-        game = utils.get_by_urlsafe(request.websafe_game_key, models.Game)
+        game = utils.get_by_urlsafe(request.urlsafe_game_key, models.Game)
 
         if game.game_over:
             raise endpoints.BadRequestException('Game is already over!  Try another one!')
@@ -119,8 +119,6 @@ class GuessLocationApi(remote.Service):
         else:
             question = gl.get_new_city_question(game)
             message = 'New question!  Good luck!'
-
-        # TODO: obtain and provide info on how many questions remaining.
 
         return question.to_form(message)
 
@@ -133,9 +131,9 @@ class GuessLocationApi(remote.Service):
     )
     def submit_question_guess(self, request):
         """Submit question and guess. Updates CityQuestion, Game, Score.
-        :param request: websafe_question_key, city_guess
+        :param request: urlsafe_question_key, city_guess
         """
-        question = utils.get_by_urlsafe(request.websafe_question_key, models.CityQuestion)
+        question = utils.get_by_urlsafe(request.urlsafe_question_key, models.CityQuestion)
         guess = request.city_guess
 
         if question.question_over:
@@ -191,9 +189,29 @@ class GuessLocationApi(remote.Service):
 
         return forms.GameForms(items=form_items, message=games_message)
 
+    @endpoints.method(
+        request_message=forms.GameKeyForm,
+        response_message=forms.GameForm,
+        path='cancel_game',
+        name='cancel_game',
+        http_method='POST'
+    )
+    def cancel_game(self, request):
+        """Cancels game in progress"""
+        game = utils.get_by_urlsafe(request.urlsafe_game_key, models.Game)
+
+        if game.game_over:
+            return game.to_form('Game is already over!')
+
+        if game.active_question:
+            game.end_question_update()
+
+        game.end_game()
+
+        return game.to_form('Game canceled.')
 
     # To be implemented:
-    # cancel_game - cancels game in progress.  boolean property for cancelled?
+    # cancel_game - cancels game in progress.  boolean property for canceled?
     # get_high_scores - descending order.  optional param "number_of_results" to limit # of results returned.
     # get_user_rankings - all users ranked by performance.  Includes name and performance indicator. win/loss ratio or some such.
     # get_game_history - provides history of moves (with responses) for each game.

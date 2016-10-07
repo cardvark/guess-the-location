@@ -46,35 +46,19 @@ function initMap() {
         infoWindow.close();
     });
 
-    // var minZoom = 18;
-    // var maxZoom = 12;
-
-    // map.addListener('zoom_changed', function(){
-    //     if (map.getZoom() < minZoom) {
-    //         map.setZoom(minZoom);
-    //     } else if (map.getZoom() > maxZoom){
-    //         map.setZoom(maxZoom);
-    //     }
-    // });
 }
 
 var ViewModel = function() {
     var self = this;
     self.isLoading = ko.observable( false );
 
-    // Setup map observables
-    // self.zoom = ko.observable(16);
-    // self.minZoom = ko.observable(16);
-    // self.maxZoom = ko.observable(18);
-    // self.lat = ko.observable(37.769115);
-    // self.lng = ko.observable(-122.435745);
-
     // Monument feedback observables
     self.monumentImage = ko.observable();
     self.monumentName = ko.observable();
 
     // Feedback observables.
-    var startingHtml = 'Create a new user and start a game!';
+    var startingHtml = '<h4>Would you like to play game?<h4>';
+    startingHtml += '<br>Create a new user and start a game!';
     startingHtml += '<br><br>Guess the city from the map and a random monument.';
     startingHtml += '<br><br>Three tries per city. A wrong answer provides more information but lowers the score.';
     self.genericFeedback = ko.observable(startingHtml);
@@ -118,7 +102,6 @@ var ViewModel = function() {
             user_name: user_name
         }).execute(function ( response ) {
             if (response.error) {
-                // var errorMessage = response.error.message || '';
                 feedback += self.errorResponse( response.error );
             } else {
                 feedback += 'User created!';
@@ -159,10 +142,6 @@ var ViewModel = function() {
             if ( response.error ) {
                 feedback += self.errorResponse( response.error );
             } else {
-                // self.newGameUsernameInput = ko.observable( '' );
-                // self.newGameRegionsInput = ko.observable( '' );
-                // self.newGameTotalCitiesInput = ko.observable( '' );
-
                 feedback += 'New game created!';
                 feedback += '<br>Game ID: ' + response.urlsafe_game_key;
                 feedback += '<br>Cities remaining: ' + response.cities_remaining;
@@ -245,25 +224,6 @@ var ViewModel = function() {
             } else {
                 // self.getQuestionGameKeyInput( '' );
                 feedback += manageQuestionResponse(response, feedback);
-
-                // // map.minZoom(response.min_zoom);
-                // // console.log( response );
-                // map.setOptions( {minZoom: parseInt( response.min_zoom) } );
-                // map.setZoom( parseInt( response.min_zoom ) );
-                // var newLatLng = new google.maps.LatLng({
-                //     lat: response.lat,
-                //     lng: response.lng
-                // });
-                // map.setCenter( newLatLng );
-
-                // // self.minZoom(response.min_zoom);
-                // // self.lat(response.lat);
-                // // self.lng(response.lng);
-
-                // feedback += response.message;
-                // feedback += '<br>Question key: ' + response.urlsafe_city_key;
-                // feedback += '<br>Attempts remaining: ' + response.attempts_remaining;
-
                 self.sendGuessQuestionKeyInput( response.urlsafe_city_key );
             }
             self.isLoading( false );
@@ -297,19 +257,7 @@ var ViewModel = function() {
             self.genericFeedback( feedback );
         });
     };
-
-    // Fires anytime anything changes
-    // ko.computed(function () {
-    //     localStorage.setItem('guess-the-location', ko.toJSON( this ));
-    //     console.log(localStorage.getItem('guess-the-location'));
-    // }).bind(this).extend({
-    //     rateLimit: {timeout: 500, method: 'notifyWhenChangesStop'}
-    // });
 };
-
-// var existing = ko.utils.parseJson(localStorage.getItem('guess-the-location'));
-
-// var ViewM = existing || new ViewModel();
 
 var ViewM = new ViewModel();
 

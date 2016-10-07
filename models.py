@@ -55,6 +55,7 @@ class User(ndb.Model):
 
     @classmethod
     def add_user(cls, name, email):
+        """Add new user"""
         user = cls(
             name=name,
             email=email
@@ -64,16 +65,14 @@ class User(ndb.Model):
 
 
 class City(ndb.Model):
-    """City object """
+    """City object"""
     city_name = ndb.StringProperty(required=True)
     country = ndb.StringProperty()
     region = ndb.StringProperty()
 
-    # classmethod - get list of cities, allow list of regions to filter by.
-
     @classmethod
     def get_city(cls, city_name, country, region):
-        """Queries and returns city entity"""
+        """Return city entity via name, country, region"""
         city = cls.query()
         city = city.filter(cls.city_name == city_name)
         city = city.filter(cls.country == country)
@@ -83,7 +82,7 @@ class City(ndb.Model):
 
     @classmethod
     def add_city(cls, city_name, country, region):
-        """Adds new city entity, unless already exists"""
+        """Add new city entity, unless already exists"""
         city = cls.get_city(city_name, country, region)
 
         if not city:
@@ -99,7 +98,7 @@ class City(ndb.Model):
 
     @classmethod
     def get_available_regions(cls):
-        """Gets unique list of regions (name only)"""
+        """Get unique list of regions (name only)"""
         query = cls.query(projection=['region'], distinct=True)
         regions_list = [data.region for data in query]
 
@@ -107,7 +106,7 @@ class City(ndb.Model):
 
     @classmethod
     def get_cities_by_regions(cls, regions_list):
-        """Gets all cities from regions requested, city_name only"""
+        """Get all cities from regions requested, city_name only"""
         cities_query = cls.query(
             cls.region.IN(regions_list),
             projection=['city_name']
@@ -115,18 +114,17 @@ class City(ndb.Model):
 
         return cities_query.fetch()
 
+    # TODO: potentially swap score to Game.  Keep consistent how to access children.
+
     def get_monuments(self):
-        """Gets monuments associated with a given city"""
+        """Get monuments associated with a given city"""
         monuments = Monument.query(ancestor=self.key).fetch()
 
         return monuments
 
 
 class Monument(ndb.Model):
-    """Monument object
-    - Always built with City parent
-
-    """
+    """Monument object"""
     fsq_id = ndb.StringProperty()
     name = ndb.StringProperty()
     lat = ndb.FloatProperty()
@@ -137,12 +135,14 @@ class Monument(ndb.Model):
 
     @classmethod
     def get_monument_by_fsq_id(cls, fsq_id):
+        """Acquire monument by foursquare ID"""
         m_key = ndb.Key(cls, fsq_id)
 
         return m_key.get()
 
     @classmethod
     def add_monument(cls, monument_dict, parent_key):
+        """Add new monument; if exists, update existing monument values."""
         fsq_id = monument_dict.get('fsq_id')
         monument = cls.get_monument_by_fsq_id(fsq_id)
 
@@ -181,7 +181,7 @@ class Game(ndb.Model):
 
     @classmethod
     def new_game(cls, user, regions_list, cities_total):
-        """Creates and returns a new game"""
+        """Create and return a new game"""
         game = cls(
             user=user.key,
             regions=regions_list,
@@ -215,12 +215,13 @@ class Game(ndb.Model):
         return games_query.fetch()
 
     def to_form(self, message=None):
-        """Returns a GameForm representation of the Game"""
+        """Return a GameForm representation of the Game"""
         form = forms.GameForm()
         form.urlsafe_game_key = self.key.urlsafe()
         form.cities_total = self.cities_total
         form.user_name = self.user.get().name
         form.cities_remaining = self.cities_remaining
+        form.game_over = self.game_over
         if message:
             form.message = message
 
@@ -231,7 +232,7 @@ class Game(ndb.Model):
 
     # May deprecate, not sure yet.
     def new_question_update(self, recent_cities, new_monument_key, active_question_key):
-        """Updates Game entity based on new question"""
+        """Update Game entity based on new question"""
         self.last_cities = recent_cities
         self.cities_remaining -= 1
         self.monuments_list.append(new_monument_key.urlsafe())
@@ -241,7 +242,7 @@ class Game(ndb.Model):
         return self
 
     def end_question_update(self):
-        """Updates Game entity based on finished question"""
+        """Set active question to None, return game status"""
         self.active_question = None
         self.put()
 
@@ -281,7 +282,6 @@ class CityQuestion(ndb.Model):
     def to_form(self, message):
         """Returns a QuestionResponseForm representation of the CityQuestion"""
         form = forms.QuestionResponseForm()
-        # Obtains allowed monument properties based on attempts remaining + minzoom
         form = gl.evaluate_question_response(self, form)
 
         # Adds own properties + message.
@@ -305,14 +305,8 @@ class CityQuestion(ndb.Model):
         self.put()
 
 
-# TODO: Score model
 class Score(ndb.Model):
-    """ Score object
-    - date (for end of game, including cancel)
-    - parent is game?
-    - score for the game.  (will be an updated total)
-    - has user
-    """
+    """ Score object"""
     user = ndb.KeyProperty(required=True, kind='User')
     date = ndb.DateTimeProperty(auto_now=True)
     total_score = ndb.IntegerProperty(default=0)

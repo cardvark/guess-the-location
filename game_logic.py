@@ -28,7 +28,6 @@ SCORE_DICT = {
     0: 2
 }
 
-# TODO: Implement use of this dict.
 MINZOOM_DICT = {
     3: 16,
     2: 12,
@@ -36,7 +35,6 @@ MINZOOM_DICT = {
     0: 4
 }
 
-# TODO: Not sure how this'll work yet.
 MONUMENT_PROPERTIES_UNLOCKS_DICT = {
     3: ['lat', 'lng'],
     2: ['img_prefix', 'img_suffix'],
@@ -172,7 +170,6 @@ def manage_city_question_attempt(city_question, guess):
         city_question.end_question(guess_correct)
         question_points = get_question_points(city_question)
         question_over = True
-        # To be implemented, somehow:
         game_score = models.Score.get_from_parent(parent_game.key)
         game_score.update_score(question_points)
         game_over = parent_game.end_question_update()
