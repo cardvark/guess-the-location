@@ -37,12 +37,8 @@ QUESTION_ATTEMPT_POST_REQUEST = endpoints.ResourceContainer(
     forms.QuestionAttemptForm,
     urlsafe_question_key=messages.StringField(1, required=True)
 )
-# GAME_POST_REQUEST = endpoints.ResourceContainer(
-#     messages.Message(urlsafe_game_key=messages.StringField(1))
-# )
-# USER_GAMES_GET_REQUEST = endpoints.ResourceContainer(
-#     forms.UserGamesForm
-# )
+# USER_GAMES_GET_REQUEST = endpoints.ResourceContainer(forms.UserGamesRequestForm)
+# HIGH_SCORES_GET_REQUEST = endpoints.ResourceContainer(forms.ScoresRequestForm)
 
 
 @endpoints.api(
@@ -159,7 +155,7 @@ class GuessLocationApi(remote.Service):
         return question.to_form(message)
 
     @endpoints.method(
-        request_message=forms.UserGamesForm,
+        request_message=forms.UserGamesRequestForm,
         response_message=forms.GameForms,
         path='get_games_by_user',
         name='get_games_by_user',
@@ -190,7 +186,7 @@ class GuessLocationApi(remote.Service):
         return forms.GameForms(items=form_items, message=games_message)
 
     @endpoints.method(
-        request_message=forms.GameKeyForm,
+        request_message=forms.GameKeyRequestForm,
         response_message=forms.GameForm,
         path='cancel_game',
         name='cancel_game',
@@ -211,6 +207,44 @@ class GuessLocationApi(remote.Service):
         game.end_game()
 
         return game.to_form('Game canceled.')
+
+    @endpoints.method(
+        request_message=forms.MaxResultsRequestForm,
+        response_message=forms.ScoreForms,
+        path='get_high_scores',
+        name='get_high_scores',
+        http_method='GET'
+    )
+    def get_high_scores(self, request):
+        """List of high scores per game
+        :param request: max_results (optional)
+        :return: Top games by score, Score and User name.
+        """
+        inactive_games = models.Game.get_all_games(game_over=True, keys_only=True)
+        score_results = models.Score.get_top_scores()
+        top_scores_list = []
+        for score in score_results:
+            if score.key.parent() in inactive_games:
+                top_scores_list.append(score.to_form())
+
+        if not top_scores_list:
+            raise endpoints.NotFoundException('No completed game scores found!')
+
+        return forms.ScoreForms(items=top_scores_list[0:request.max_results], message='Top scores')
+
+    @endpoints.method(
+        request_message=forms.MaxResultsRequestForm,
+        response_message=forms.UserRankForm,
+        path='get_user_rankings',
+        name='get_user_rankings',
+        http_method='GET'
+    )
+    def get_user_rankings(self, request):
+        """List of users by ranking metric (guess_rate)
+        :param request: max_results (optional)
+        :return: Top users by ranking metric.
+        """
+
 
     # To be implemented:
     # cancel_game - cancels game in progress.  boolean property for canceled?

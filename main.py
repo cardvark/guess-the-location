@@ -66,15 +66,36 @@ class PlayGroundHandler(webapp2.RequestHandler):
         """General testing ground"""
         # print models.City.get_available_regions()
 
-        game = utils.get_by_urlsafe('aghkZXZ-Tm9uZXIRCxIER2FtZRiAgICAgODPCAw', models.Game)
+        possible_cities = models.City.get_cities_by_regions(['North America'])
 
-        question = utils.get_by_urlsafe('aghkZXZ-Tm9uZXIqCxIER2FtZRiAgICAgODXCgwLEgxDaXR5UXVlc3Rpb24YgICAgIDg9woM', models.CityQuestion)
-        print question.question_over
-        question.end_question()
-        print question.question_over
-        question.question_over = False
-        question.put()
-        print question.question_over
+        i = 50
+        while i > 0:
+            new_city_key = gl.get_unique_random_key([], possible_cities)
+            print new_city_key.get().city_name
+            i -= 1
+
+        # game_results = models.Game.get_all_games(game_over=True, keys_only=True)
+        # # print game_results
+
+        # score_results = models.Score.get_top_scores()
+
+        # output_list = []
+        # for score in score_results:
+        #     if score.key.parent() in game_results:
+        #         output_list.append(score)
+
+        # print output_list[0:3]
+
+
+        # game = utils.get_by_urlsafe('aghkZXZ-Tm9uZXIRCxIER2FtZRiAgICAgODPCAw', models.Game)
+
+        # question = utils.get_by_urlsafe('aghkZXZ-Tm9uZXIqCxIER2FtZRiAgICAgODXCgwLEgxDaXR5UXVlc3Rpb24YgICAgIDg9woM', models.CityQuestion)
+        # print question.question_over
+        # question.end_question()
+        # print question.question_over
+        # question.question_over = False
+        # question.put()
+        # print question.question_over
 
         # print question.city_name
         # print question.key.parent().get()

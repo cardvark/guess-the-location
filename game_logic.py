@@ -47,6 +47,16 @@ MAX_CITY_QUESTIONS = 5  # Max 5 city questions per game
 QUESTION_ATTEMPTS = 3  # Max 3 guess attempts per city question.
 
 
+def calculate_bonus(score):
+    """Calculate bonus to score based on total possible cities in a game"""
+    parent_game = score.key.parent().get()
+    possible_cities = models.City.get_cities_by_regions(parent_game.regions)
+
+    bonus = 1 + len(possible_cities) / 100.0
+
+    return bonus
+
+
 def update_recent_cities(new_city_key, recent_cities):
     """Update Game recent cities list"""
     recent_cities.append(new_city_key)
@@ -60,7 +70,7 @@ def update_recent_cities(new_city_key, recent_cities):
 def get_unique_random_key(prev_list, possible_list):
     """Return a random item from possible_list that was not in prev_list
 
-    :param prev_list: list of websafe keys
+    :param prev_list: list of urlsafe keys
     :param possible_list: list of entities
     :return: key of random item from possible_list
     """
@@ -142,6 +152,8 @@ def evaluate_question_response(city_question, form):
         if parent_game.game_over:
             score_object = models.Score.get_from_parent(parent_game.key)
             setattr(form, 'total_score', score_object.total_score)
+            setattr(form, 'bonus_modifier', calculate_bonus(score_object))
+            setattr(form, 'bonus_score', score_object.bonus_score)
             setattr(form, 'game_over', True)
 
     for prop in allowed_properties:

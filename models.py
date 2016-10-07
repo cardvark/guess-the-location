@@ -193,6 +193,20 @@ class Game(ndb.Model):
         return game
 
     @classmethod
+    def get_all_games(cls, game_over=None, num_limit=None, keys_only=False):
+        """Return all games, by game_over status and num_limit
+        :param active_status: True, False, or blank.
+        :param num_limit: optional limit to results.
+        """
+        game_query = cls.query()
+        if game_over is not None:
+            game_query.filter(cls.game_over == game_over)
+
+        if num_limit:
+            return game_query.fetch(num_limit, keys_only=keys_only)
+        return game_query.fetch(keys_only=keys_only)
+
+    @classmethod
     def get_games_by_user(cls, user, all_games):
         filters = [{'field': 'user', 'operator': '=', 'value': user.key}]
         if not all_games:
@@ -252,6 +266,8 @@ class Game(ndb.Model):
     def end_game(self):
         """Ends game upon completion or cancel"""
         self.game_over = True
+        score = Score.get_from_parent(self.key)
+        score.apply_bonus()
         self.put()
 
 
@@ -311,6 +327,7 @@ class Score(ndb.Model):
     user = ndb.KeyProperty(required=True, kind='User')
     date = ndb.DateTimeProperty(auto_now=True)
     total_score = ndb.IntegerProperty(default=0)
+    bonus_score = ndb.IntegerProperty()
 
     @classmethod
     def new_score(cls, user_key, game_key):
@@ -328,8 +345,32 @@ class Score(ndb.Model):
 
         return score_object
 
+    @classmethod
+    def get_top_scores(cls, num_limit=None):
+        score_query = cls.query()
+        score_query = score_query.order(-cls.bonus_score)
+        if num_limit:
+            return score_query.fetch(num_limit)
+
+        return score_query.fetch()
+
     def update_score(self, question_score):
         self.total_score += question_score
         self.put()
 
         return self.total_score
+
+    def apply_bonus(self):
+        bonus_modifier = gl.calculate_bonus(self)
+        self.bonus_score = int(self.total_score * bonus_modifier)
+
+        self.put()
+
+    def to_form(self):
+        form = forms.ScoreForm()
+        form.date = self.date
+        form.total_score = self.total_score
+        form.bonus_score = self.bonus_score
+        form.user_name = self.user.get().name
+
+        return form

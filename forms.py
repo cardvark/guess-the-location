@@ -9,6 +9,7 @@ Guess the location game server-side Python App Engine
 """
 
 from protorpc import messages
+from protorpc import message_types
 
 
 class UserForm(messages.Message):
@@ -24,7 +25,7 @@ class NewGameForm(messages.Message):
     cities_total = messages.IntegerField(3)
 
 
-class GameKeyForm(messages.Message):
+class GameKeyRequestForm(messages.Message):
     """GameKeyForm -- inbound single game key"""
     urlsafe_game_key = messages.StringField(1)
 
@@ -42,9 +43,28 @@ class GameForm(messages.Message):
 
 
 class GameForms(messages.Message):
-    """GameForms --multiple Game outbound form message """
+    """GameForms -- multiple Game outbound form message """
     items = messages.MessageField(GameForm, 1, repeated=True)
     message = messages.StringField(2)
+
+
+class ScoreForm(messages.Message):
+    """ScoreForm -- outbound Score results form"""
+    total_score = messages.IntegerField(1)
+    bonus_score = messages.IntegerField(2)
+    date = message_types.DateTimeField(3)
+    user_name = messages.StringField(4)
+
+
+class ScoreForms(messages.Message):
+    """ScoreForms -- multiple Score outbound forms"""
+    items = messages.MessageField(ScoreForm, 1, repeated=True)
+    message = messages.StringField(2)
+
+
+class MaxResultsRequestForm(messages.Message):
+    """MaxResultsRequestForm -- request top scores with optional limit"""
+    max_results = messages.IntegerField(1)
 
 
 # Should match game_logic.MONUMENT_PROPERTIES_UNLOCKS_DICT
@@ -64,8 +84,10 @@ class QuestionResponseForm(messages.Message):
     question_score = messages.IntegerField(12)
     cities_remaining = messages.IntegerField(13)
     total_score = messages.IntegerField(14)
-    game_over = messages.BooleanField(15)
-    message = messages.StringField(16)
+    bonus_modifier = messages.FloatField(15)
+    bonus_score = messages.IntegerField(16)
+    game_over = messages.BooleanField(17)
+    message = messages.StringField(18)
 
 
 class QuestionAttemptForm(messages.Message):
@@ -75,7 +97,19 @@ class QuestionAttemptForm(messages.Message):
     city_guess = messages.StringField(1, required=True)
 
 
-class UserGamesForm(messages.Message):
-    """UserGamesForm -- request user's games.  All or Active only"""
+class UserGamesRequestForm(messages.Message):
+    """UserGamesRequestForm -- request user's games.  All or Active only"""
     user_name = messages.StringField(1, required=True)
     all_games = messages.BooleanField(2)
+
+
+class UserRankForm(messages.Message):
+    """UserRankingsForm -- outbound form with rank metric"""
+    user_name = messages.StringField(1)
+    guess_rate = messages.FloatField(2)
+
+
+class UserRankForms(messages.Message):
+    """UserRankForms -- multiple UserRankForm outbound form"""
+    items = messages.MessageField(UserRankForm, 1, repeated=True)
+    message = messages.StringField(2)
