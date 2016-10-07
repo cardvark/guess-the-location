@@ -29,8 +29,8 @@ function initMap() {
     map.setOptions({
         draggable: false,
         // zoomControl: false,
-        scrollwheel: false,
-        disableDoubleClickZoom: true,
+        // scrollwheel: false,
+        // disableDoubleClickZoom: true,
         streetViewControl: false,
         minZoom: 4,
         maxZoom: 18
@@ -193,14 +193,16 @@ var ViewModel = function() {
         feedback += response.message;
 
         if ( response.question_score ){
+            self.sendGuessQuestionKeyInput( '' );
             infoWindow.close();
             feedback += '<br>Correct answer: ' + response.city_name;
             feedback += '<br>Points earned: ' + response.question_score;
             feedback += '<br> Cities remaining: ' + response.cities_remaining;
         }
         if ( response.game_over ) {
-            // feedback += '<br>Game over!';
-            feedback += '<br>Final score: ' + response.total_score;
+            feedback += '<br>Base score: ' + response.total_score;
+            feedback += '<br>Bonus modifier: ' + response.bonus_modifier;
+            feedback += '<br>Total score: ' + response.bonus_score;
         } else {
             feedback += '<br>Attempts remaining: ' + response.attempts_remaining;
             feedback += '<br>Question key: ' + response.urlsafe_city_key;
@@ -270,6 +272,10 @@ var ViewModel = function() {
 
         self.isLoading( true );
 
+        // reset some fields:
+        self.monumentImage( '' );
+        self.monumentName( '' );
+
         gapi.client.guess_the_location.get_games_by_user({
             user_name: user_name,
             all_games: all_games
@@ -290,8 +296,8 @@ var ViewModel = function() {
                     feedback += '<br>Remaining questions: ' + remaining;
                 });
 
-                self.genericFeedback( feedback );
             }
+            self.genericFeedback( feedback );
             self.isLoading( false );
         });
     };
