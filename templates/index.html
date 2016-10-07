@@ -32,7 +32,7 @@
           <div data-bind="html: genericFeedback"></div>
         </div>
         <div class="row">
-          <h4>Create User</h4>
+          <h5>Create User</h5>
           <form data-bind="submit: createUser">
             Email
             <!-- should persist if error, both reset if accepted. -->
@@ -48,7 +48,7 @@
           <!-- Should persist until new one is created. -->
         </div>
         <div class="row">
-          <h4>Create New Game</h4>
+          <h5>Create New Game</h5>
           <form data-bind="submit: createNewGame">
             user_name
             <input placeholder="String" data-bind="value: newGameUsernameInput">
@@ -65,10 +65,23 @@
           <!-- <div data-bind="html: feedback observable"></div> -->
         </div>
         <div class="row">
-          <h4>Get Question</h4>
+          <h5>Get Question</h5>
           <form data-bind="submit: getQuestion">
             game_key
             <input placeholder="String" data-bind="value: getQuestionGameKeyInput">
+            <button type="submit">Submit</button>
+          </form>
+          <br>
+          <!-- <div data-bind="html: feedback observable"></div> -->
+        </div>
+        <div class="row">
+          <h5>Submit Guess</h5>
+          <form data-bind="submit: sendGuess">
+            question key
+            <input placeholder="String" data-bind="value: sendGuessQuestionKeyInput">
+            <br>
+            city guess
+            <input placeholder="String" data-bind="value: sendGuessCityInput">
             <br>
             <button type="submit">Submit</button>
           </form>
@@ -76,21 +89,13 @@
           <!-- <div data-bind="html: feedback observable"></div> -->
         </div>
         <div class="row">
-          <h4>Submit Guess</h4>
-          <form data-bind="submit: sendGuess">
-            question key
-            <input placeholder="String" data-bind="value: sendGuessQuestionKeyInput">
-            <br>
-            city guess
-            <input placeholder="String" data-bind="value: sendGuessCityInput">
+          <h5>Get Active Games</h5>
+          <form data-bind="submit: getGames">
+            user_name
+            <input placeholder="String" data-bind="value: getGamesUsernameInput">
             <button type="submit">Submit</button>
           </form>
-          <br>
-          <!-- <div data-bind="html: feedback observable"></div> -->
         </div>
-<!--         <div class="row">get_games_by_user: user_name, all_games true/false
-          <h5>Get User's Games</h5>
-        </div> -->
       </div>
       <div class="col-md-8 map-col">
         <div id="map" class="map-div"></div>

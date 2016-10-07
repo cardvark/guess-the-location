@@ -37,7 +37,8 @@ class GameForm(messages.Message):
     cities_remaining = messages.IntegerField(4)
     active_question = messages.StringField(5)
     game_over = messages.BooleanField(6)
-    message = messages.StringField(7)
+    regions = messages.StringField(7, repeated=True)
+    message = messages.StringField(8)
 
 
 class GameForms(messages.Message):

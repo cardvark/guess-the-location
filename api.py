@@ -167,7 +167,7 @@ class GuessLocationApi(remote.Service):
     )
     def get_games_by_user(self, request):
         """Get list of games (active or all) by user_name.
-        :param request: user_name
+        :param request: user_name, all_games
         """
         user = models.User.query(models.User.name == request.user_name).get()
         if not user:
@@ -197,7 +197,9 @@ class GuessLocationApi(remote.Service):
         http_method='POST'
     )
     def cancel_game(self, request):
-        """Cancels game in progress"""
+        """Cancels game in progress
+        :param request: urlsafe_game_key
+        """
         game = utils.get_by_urlsafe(request.urlsafe_game_key, models.Game)
 
         if game.game_over:

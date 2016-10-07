@@ -221,6 +221,7 @@ class Game(ndb.Model):
         form.cities_total = self.cities_total
         form.user_name = self.user.get().name
         form.cities_remaining = self.cities_remaining
+        form.regions = self.regions
         form.game_over = self.game_over
         if message:
             form.message = message

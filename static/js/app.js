@@ -80,6 +80,10 @@ var ViewModel = function() {
     self.sendGuessQuestionKeyInput = ko.observable();
     self.sendGuessCityInput = ko.observable();
 
+    // Get Games input values
+    self.getGamesUsernameInput = ko.observable();
+    self.getGamesAllGamesInput = ko.observable( false );
+
     self.errorResponse = function( error ) {
         var outMessage = '';
         outMessage += 'Error!';
@@ -108,6 +112,7 @@ var ViewModel = function() {
                 feedback += '<br>Name: ' + user_name;
                 feedback += '<br>Email: ' + email;
                 self.createEmailInput( '' );
+                self.getGamesUsernameInput( user_name );
             }
             // self.createUsernameInput( '' );
             self.isLoading( false );
@@ -217,7 +222,7 @@ var ViewModel = function() {
         self.sendGuessQuestionKeyInput( '' );
 
         gapi.client.guess_the_location.get_question({
-            websafe_game_key: game_key
+            urlsafe_game_key: game_key
         }).execute(function ( response ) {
             if ( response.error ) {
                 feedback += self.errorResponse( response.error );
@@ -244,9 +249,9 @@ var ViewModel = function() {
         self.monumentName( '' );
 
         gapi.client.guess_the_location.submit_question_guess({
-            websafe_question_key: question_key,
+            urlsafe_question_key: question_key,
             city_guess: city_guess
-        }).execute(function (response) {
+        }).execute(function ( response ) {
             if ( response.error ) {
                 feedback += self.errorResponse( response.error );
             } else {
@@ -255,6 +260,39 @@ var ViewModel = function() {
             }
             self.isLoading( false );
             self.genericFeedback( feedback );
+        });
+    };
+
+    self.getGames = function() {
+        var user_name = self.getGamesUsernameInput();
+        var all_games = self.getGamesAllGamesInput();
+        var feedback = '';
+
+        self.isLoading( true );
+
+        gapi.client.guess_the_location.get_games_by_user({
+            user_name: user_name,
+            all_games: all_games
+        }).execute(function ( response ) {
+            if ( response.error ) {
+                feedback += self.errorResponse( response.error );
+            } else {
+                feedback += 'Returning all active games!';
+                var game_list = response.items;
+
+                game_list.forEach(function ( game_resp ) {
+                    feedback += '<br><br>Key: ' + game_resp.urlsafe_game_key;
+                    feedback += '<br>Regions: ' + game_resp.regions.join(', ');
+                    if ( game_resp.active_question ){
+                        feedback += '<br>Active question key: ' + game_resp.active_question;
+                    }
+                    var remaining = game_resp.cities_remaining || 0;
+                    feedback += '<br>Remaining questions: ' + remaining;
+                });
+
+                self.genericFeedback( feedback );
+            }
+            self.isLoading( false );
         });
     };
 };
