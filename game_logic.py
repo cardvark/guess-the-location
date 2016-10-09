@@ -20,6 +20,7 @@ Rules:
 
 import models
 import random
+import forms
 from google.appengine.api import taskqueue
 
 # Game constants
@@ -132,31 +133,29 @@ def get_allowed_properties(city_question):
     return allowed_list
 
 
-def evaluate_question_response(city_question, form):
-    """Evaluate appropriate response based on CityQuestion entity properties
-
-    :param city_question: CityQuestion object
-    :param form: QuestionResponseForm object
-    :return: form with allowed monument properties, min zoom and score if question_over.
-
-    """
+def evaluate_question_response_form(city_question, message):
+    """Evaluate appropriate response based on CityQuestion entity properties"""
+    form = forms.QuestionResponseForm()
     monument = city_question.monument.get()
     allowed_properties = get_allowed_properties(city_question)
 
-    setattr(form, 'min_zoom', MINZOOM_DICT[city_question.attempts_remaining])
+    form.min_zoom = MINZOOM_DICT[city_question.attempts_remaining]
+    form.urlsafe_city_key = city_question.key.urlsafe()
+    form.message = message
+
     if city_question.question_over:
         parent_game = city_question.key.parent().get()
-        setattr(form, 'question_score', get_question_points(city_question))
-        setattr(form, 'min_zoom', MINZOOM_DICT[0])
-        setattr(form, 'cities_remaining', parent_game.cities_remaining)
-        setattr(form, 'guessed_correct', city_question.guessed_correct)
-        setattr(form, 'city_name', city_question.city_name)
+        form.question_score = get_question_points(city_question)
+        form.min_zoom = MINZOOM_DICT[0]
+        form.cities_remaining = parent_game.cities_remaining
+        form.guessed_correct = city_question.guessed_correct
+        form.city_name = city_question.city_name
         if parent_game.game_over:
             score_object = models.Score.get_from_parent(parent_game.key)
-            setattr(form, 'total_score', score_object.total_score)
-            setattr(form, 'bonus_modifier', calculate_bonus(score_object))
-            setattr(form, 'bonus_score', score_object.bonus_score)
-            setattr(form, 'game_over', True)
+            form.total_score = score_object.total_score
+            form.bonus_modifier = calculate_bonus(score_object)
+            form.bonus_score = score_object.bonus_score
+            form.game_over = True
 
     for prop in allowed_properties:
         setattr(form, prop, getattr(monument, prop))

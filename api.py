@@ -118,7 +118,7 @@ class GuessLocationApi(remote.Service):
             question = gl.get_new_city_question(game)
             message = 'New question!  Good luck!'
 
-        return question.to_form(message)
+        return gl.evaluate_question_response_form(question, message)
 
     @endpoints.method(
         request_message=QUESTION_ATTEMPT_POST_REQUEST,
@@ -135,7 +135,8 @@ class GuessLocationApi(remote.Service):
         guess = request.city_guess
 
         if question.question_over:
-            return question.to_form('This question is resolved!  Try another question.  Answer was: ' + question.city_name)
+            message = 'This question is resolved!  Try another question.  Answer was: ' + question.city_name
+            return gl.evaluate_question_response_form(question, message)
 
         # Shouldn't occur; question should be over before this case can arise.
         if question.attempts_remaining <= 0:
@@ -154,7 +155,7 @@ class GuessLocationApi(remote.Service):
         if game_over:
             message += '<br><br>Game over!  Start a new game!'
 
-        return question.to_form(message)
+        return gl.evaluate_question_response_form(question, message)
 
     @endpoints.method(
         request_message=forms.UserGamesRequestForm,
