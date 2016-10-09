@@ -70,7 +70,7 @@ class GuessLocationApi(remote.Service):
         return forms.UserForm(user_name=user.name, email=user.email)
 
     @endpoints.method(
-        request_message=NEW_GAME_POST_REQUEST,
+        request_message=forms.NewGameForm,
         response_message=forms.GameForm,
         path='game',
         name='new_game',

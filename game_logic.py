@@ -133,6 +133,9 @@ def get_allowed_properties(city_question):
     return allowed_list
 
 
+# TODO: Might move this over to become a function in API.
+# form building should be either entity based or API side.
+# there's just a lot of game logic here.
 def evaluate_question_response_form(city_question, message):
     """Evaluate appropriate response based on CityQuestion entity properties"""
     form = forms.QuestionResponseForm()

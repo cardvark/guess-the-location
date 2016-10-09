@@ -113,3 +113,28 @@ class UserRankForms(messages.Message):
     """UserRankForms -- multiple UserRankForm outbound form"""
     items = messages.MessageField(UserRankForm, 1, repeated=True)
     message = messages.StringField(2)
+
+
+class GuessResponseForm(messages.Message):
+    """GuessResponseForm -- User guess and game response for game history"""
+    user_guess = messages.StringField(1)
+    guessed_correct = messages.BooleanField(2)
+
+
+class QuestionHistoryForm(messages.Message):
+    """QuestionHistoryForm -- multiple GuessResponseForm for each question"""
+    city_name = messages.StringField(1)
+    monument_name = messages.StringField(2)
+    guess_responses = messages.MessageField(GuessResponseForm, 3, repeated=True)
+    question_score = messages.IntegerField(4)
+
+
+class GameHistoryForm(messages.Message):
+    """GameHistoryForm -- multiple QuestionHistoryForm for a game"""
+    user_name = messages.StringField(1)
+    regions = messages.StringField(2, repeated=True)
+    question_history = messages.MessageField(QuestionHistoryForm, 3, repeated=True)
+    total_score = messages.IntegerField(4)
+    bonus_modifier = messages.FloatField(5)
+    bonus_score = messages.IntegerField(6)
+    game_over = messages.BooleanField(7)

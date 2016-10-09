@@ -16,15 +16,11 @@ import webapp2
 import sys
 # from google.appengine.api import app_identity
 # from google.appengine.api import mail
-from google.appengine.api import taskqueue
-from google.appengine.api import memcache
 from api import GuessLocationApi
 import models
 import foursquareApi as fApi
-import utils
 import game_logic as gl
 from google.appengine.ext import ndb
-# import random
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
