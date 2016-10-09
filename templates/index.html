@@ -31,69 +31,51 @@
           <div data-bind="html: monumentName"></div>
           <div data-bind="html: genericFeedback"></div>
         </div>
+        <br>
         <div class="row">
           <h5>Create User</h5>
-          <form data-bind="submit: createUser">
-            Email
-            <!-- should persist if error, both reset if accepted. -->
-            <input placeholder="String" data-bind="value: createEmailInput">
-            <br>
-            user_name
-            <input placeholder="String" data-bind="value: createUsernameInput">
-            <br>
-            <button type="submit">Submit</button>
+          <form class="form-group col-xs-8" data-bind="submit: createUser">
+            <input class="form-control input-sm" placeholder="Email" data-bind="value: createEmailInput">
+            <input class="form-control input-sm" placeholder="User name" data-bind="value: createUsernameInput">
+            <button class="btn btn-sm btn-default" type="submit">Submit</button>
           </form>
           <br>
-          <!-- <div data-bind="html: feedback observable"></div> -->
-          <!-- Should persist until new one is created. -->
         </div>
         <div class="row">
           <h5>Create New Game</h5>
-          <form data-bind="submit: createNewGame">
-            user_name
-            <input placeholder="String" data-bind="value: newGameUsernameInput">
-            <br>
-            regions
-            <input placeholder="Comma separated" data-bind="value: newGameRegionsInput">
-            <br>
-            Total cities (max 5) <!-- could change max to data-bind, maybe. -->
-            <input placeholder="Integer" data-bind="value: newGameTotalCitiesInput">
-            <br>
-            <button type="submit">Submit</button>
+          <form class="form-group col-xs-8" data-bind="submit: createNewGame">
+            <input class="form-control input-sm" placeholder="User name" data-bind="value: newGameUsernameInput">
+            <input class="form-control input-sm" placeholder="Regions (comma separated)" data-bind="value: newGameRegionsInput">
+            <input class="form-control input-sm" placeholder="Total cities (5 max)" data-bind="value: newGameTotalCitiesInput">
+            <button class="btn btn-sm btn-default" type="submit">Submit</button>
           </form>
           <br>
           <!-- <div data-bind="html: feedback observable"></div> -->
         </div>
         <div class="row">
           <h5>Get Question</h5>
-          <form data-bind="submit: getQuestion">
-            game_key
-            <input placeholder="String" data-bind="value: getQuestionGameKeyInput">
-            <button type="submit">Submit</button>
+          <form class="form-group col-xs-8" data-bind="submit: getQuestion">
+            <input class="form-control input-sm" placeholder="Game key" data-bind="value: getQuestionGameKeyInput">
+            <button class="btn btn-sm btn-default" type="submit">Submit</button>
           </form>
           <br>
           <!-- <div data-bind="html: feedback observable"></div> -->
         </div>
         <div class="row">
           <h5>Submit Guess</h5>
-          <form data-bind="submit: sendGuess">
-            question key
-            <input placeholder="String" data-bind="value: sendGuessQuestionKeyInput">
-            <br>
-            city guess
-            <input placeholder="String" data-bind="value: sendGuessCityInput">
-            <br>
-            <button type="submit">Submit</button>
+          <form class="form-group col-xs-8" data-bind="submit: sendGuess">
+            <input class="form-control input-sm" placeholder="Question key" data-bind="value: sendGuessQuestionKeyInput">
+            <input class="form-control input-sm" placeholder="Guess city" data-bind="value: sendGuessCityInput">
+            <button class="btn btn-sm btn-default" type="submit">Submit</button>
           </form>
           <br>
           <!-- <div data-bind="html: feedback observable"></div> -->
         </div>
         <div class="row">
           <h5>Get Active Games</h5>
-          <form data-bind="submit: getGames">
-            user_name
-            <input placeholder="String" data-bind="value: getGamesUsernameInput">
-            <button type="submit">Submit</button>
+          <form class="form-group col-xs-8" data-bind="submit: getGames">
+            <input class="form-control input-sm" placeholder="User name" data-bind="value: getGamesUsernameInput">
+            <button class="btn btn-sm btn-default" type="submit">Submit</button>
           </form>
         </div>
       </div>

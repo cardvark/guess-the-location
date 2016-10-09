@@ -82,7 +82,10 @@ var ViewModel = function() {
 
     // Get Games input values
     self.getGamesUsernameInput = ko.observable();
-    self.getGamesAllGamesInput = ko.observable( false );
+    self.getGamesGameOverInput = ko.observable( false );
+
+    //
+    self.formsList = ko.observableArray( [] );
 
     self.errorResponse = function( error ) {
         var outMessage = '';
@@ -267,7 +270,7 @@ var ViewModel = function() {
 
     self.getGames = function() {
         var user_name = self.getGamesUsernameInput();
-        var all_games = self.getGamesAllGamesInput();
+        var game_over = self.getGamesGameOverInput();
         var feedback = '';
 
         self.isLoading( true );
@@ -278,7 +281,7 @@ var ViewModel = function() {
 
         gapi.client.guess_the_location.get_games_by_user({
             user_name: user_name,
-            all_games: all_games
+            game_over: game_over
         }).execute(function ( response ) {
             if ( response.error ) {
                 feedback += self.errorResponse( response.error );
