@@ -20,6 +20,7 @@ Rules:
 
 import models
 import random
+from google.appengine.api import taskqueue
 
 # Game constants
 SCORE_DICT = {

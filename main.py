@@ -58,7 +58,7 @@ class BuildMonumentsDataHandler(webapp2.RequestHandler):
 
 
 class UpdateUserRankingsCache(webapp2.RequestHandler):
-    def get(self):
+    def post(self):
         """Update user rankings list in memcache"""
         GuessLocationApi._cache_user_rankings()
         self.response.set_status(204)
