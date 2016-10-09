@@ -1,4 +1,4 @@
 cron:
-- description: Refresh Monuments Kind every websafe_question_key
+- description: Refresh Monuments Kind every urlsafe_question_key
   url: /crons/build_monuments_data
   schedule: every 168 hours

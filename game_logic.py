@@ -45,6 +45,7 @@ MONUMENT_PROPERTIES_UNLOCKS_DICT = {
 RECENT_CITIES_LIMIT = 3  # prevents duplicate city question for at least 3
 MAX_CITY_QUESTIONS = 5  # Max 5 city questions per game
 QUESTION_ATTEMPTS = 3  # Max 3 guess attempts per city question.
+MINIMUM_QUESTIONS_RANKING = 5  # Min number of questions to be ranked
 
 
 def calculate_bonus(score):
@@ -187,6 +188,7 @@ def manage_city_question_attempt(city_question, guess):
         game_over = parent_game.end_question_update()
 
         if game_over:
+            taskqueue.add(url='/jobs/cache_user_rankings')
             parent_game.end_game()
 
     return game_over, question_over, guess_correct
@@ -199,3 +201,37 @@ def get_question_points(city_question):
         score = SCORE_DICT[city_question.attempts_remaining]
 
     return score
+
+
+def avg_guess_rate(user):
+    """Calculate avg number of guesses per question for a user"""
+    completed_games = models.Game.get_all_games(user=user, game_over=True, completed=True)
+
+    all_questions = []
+    for game in completed_games:
+        questions_list = models.CityQuestion.get_questions_from_parent(game.key)
+        all_questions += questions_list
+
+    if len(all_questions) < MINIMUM_QUESTIONS_RANKING:
+        return
+
+    guess_attempts_list = []
+    for question in all_questions:
+        guess_attempts = question.attempts_allowed - question.attempts_remaining
+        guess_attempts_list.append(guess_attempts)
+
+    return float(sum(guess_attempts_list)) / len(guess_attempts_list)
+
+
+def get_user_rankings():
+    """Retrieve user rankings by avg guess rate"""
+    all_users = models.User.query().fetch()
+    rankings_list = []
+    for user in all_users:
+        avg_attempts = avg_guess_rate(user)
+        if avg_attempts is not None:
+            rankings_list.append({'user_name': user.name, 'guess_rate': avg_attempts})
+
+    rankings_list = sorted(rankings_list, key=lambda x: x['guess_rate'])
+
+    return rankings_list

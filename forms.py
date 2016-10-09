@@ -100,7 +100,7 @@ class QuestionAttemptForm(messages.Message):
 class UserGamesRequestForm(messages.Message):
     """UserGamesRequestForm -- request user's games.  All or Active only"""
     user_name = messages.StringField(1, required=True)
-    all_games = messages.BooleanField(2)
+    game_over = messages.BooleanField(2)
 
 
 class UserRankForm(messages.Message):

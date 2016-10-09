@@ -17,6 +17,7 @@ import sys
 # from google.appengine.api import app_identity
 # from google.appengine.api import mail
 from google.appengine.api import taskqueue
+from google.appengine.api import memcache
 from api import GuessLocationApi
 import models
 import foursquareApi as fApi
@@ -56,6 +57,13 @@ class BuildMonumentsDataHandler(webapp2.RequestHandler):
                 print city.city_name, mon.name
 
 
+class UpdateUserRankingsCache(webapp2.RequestHandler):
+    def get(self):
+        """Update user rankings list in memcache"""
+        GuessLocationApi._cache_user_rankings()
+        self.response.set_status(204)
+
+
 # class CronTasksHandler(webapp2.RequestHandler):
 #     """Cron jobs into taskqueue"""
 #     taskqueue.add(url='/jobs/build_monuments_data')
@@ -64,15 +72,23 @@ class BuildMonumentsDataHandler(webapp2.RequestHandler):
 class PlayGroundHandler(webapp2.RequestHandler):
     def get(self):
         """General testing ground"""
+        user = models.User.query(models.User.name == 'jimmy').get()
+        all_users = models.User.query().fetch()
+        for user in all_users:
+            attempts = gl.avg_guess_rate(user)
+            if attempts is not None:
+                print user.name, '{:.4f}'.format(attempts)
+
+
         # print models.City.get_available_regions()
 
-        possible_cities = models.City.get_cities_by_regions(['North America'])
+        # possible_cities = models.City.get_cities_by_regions(['North America'])
 
-        i = 50
-        while i > 0:
-            new_city_key = gl.get_unique_random_key([], possible_cities)
-            print new_city_key.get().city_name
-            i -= 1
+        # i = 50
+        # while i > 0:
+        #     new_city_key = gl.get_unique_random_key([], possible_cities)
+        #     print new_city_key.get().city_name
+        #     i -= 1
 
         # game_results = models.Game.get_all_games(game_over=True, keys_only=True)
         # # print game_results
@@ -142,7 +158,7 @@ class PlayGroundHandler(webapp2.RequestHandler):
 
 app = webapp2.WSGIApplication([
     ('/jobs/build_city_data', BuildCityDataHandler),
+    ('/jobs/cache_user_rankings', UpdateUserRankingsCache),
     ('/crons/build_monuments_data', BuildMonumentsDataHandler),
-    # ('/crons/task_trigger', CronTasksHandler),
     ('/jobs/playground', PlayGroundHandler)
 ], debug=True)

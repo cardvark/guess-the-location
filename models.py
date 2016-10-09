@@ -193,40 +193,47 @@ class Game(ndb.Model):
         return game
 
     @classmethod
-    def get_all_games(cls, game_over=None, num_limit=None, keys_only=False):
+    def get_all_games(cls, user=None, game_over=None, num_limit=None, keys_only=False, completed=False):
         """Return all games, by game_over status and num_limit
         :param active_status: True, False, or blank.
         :param num_limit: optional limit to results.
         """
         game_query = cls.query()
+
+        if user:
+            game_query = game_query.filter(cls.user == user.key)
+
         if game_over is not None:
-            game_query.filter(cls.game_over == game_over)
+            game_query = game_query.filter(cls.game_over == game_over)
+
+        if completed:
+            game_query = game_query.filter(cls.cities_remaining == 0)
 
         if num_limit:
             return game_query.fetch(num_limit, keys_only=keys_only)
         return game_query.fetch(keys_only=keys_only)
 
-    @classmethod
-    def get_games_by_user(cls, user, all_games):
-        filters = [{'field': 'user', 'operator': '=', 'value': user.key}]
-        if not all_games:
-            active_filter = {
-                'field': 'game_over',
-                'operator': '=',
-                'value': False
-            }
-            filters.append(active_filter)
+    # @classmethod
+    # def get_games_by_user(cls, user, all_games):
+    #     filters = [{'field': 'user', 'operator': '=', 'value': user.key}]
+    #     if not all_games:
+    #         active_filter = {
+    #             'field': 'game_over',
+    #             'operator': '=',
+    #             'value': False
+    #         }
+    #         filters.append(active_filter)
 
-        games_query = cls.query()
-        for fltr in filters:
-            formatted_filter = ndb.query.FilterNode(
-                fltr['field'],
-                fltr['operator'],
-                fltr['value']
-                )
-            games_query = games_query.filter(formatted_filter)
+    #     games_query = cls.query()
+    #     for fltr in filters:
+    #         formatted_filter = ndb.query.FilterNode(
+    #             fltr['field'],
+    #             fltr['operator'],
+    #             fltr['value']
+    #             )
+    #         games_query = games_query.filter(formatted_filter)
 
-        return games_query.fetch()
+    #     return games_query.fetch()
 
     def to_form(self, message=None):
         """Return a GameForm representation of the Game"""
@@ -295,6 +302,11 @@ class CityQuestion(ndb.Model):
         )
         new_question.put()
         return new_question
+
+    @classmethod
+    def get_questions_from_parent(cls, parent_game_key):
+        questions_list = cls.query(ancestor=parent_game_key).fetch()
+        return questions_list
 
     def to_form(self, message):
         """Returns a QuestionResponseForm representation of the CityQuestion"""

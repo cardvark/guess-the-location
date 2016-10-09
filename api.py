@@ -27,6 +27,8 @@ sys.setdefaultencoding('utf-8')
 EMAIL_SCOPE = endpoints.EMAIL_SCOPE
 API_EXPLORER_CLIENT_ID = endpoints.API_EXPLORER_CLIENT_ID
 
+MEMCACHE_USER_RANKINGS = 'USER_RANKINGS'
+
 NEW_USER_POST_REQUEST = endpoints.ResourceContainer(forms.UserForm)
 NEW_GAME_POST_REQUEST = endpoints.ResourceContainer(forms.NewGameForm)
 QUESTION_GET_REQUEST = endpoints.ResourceContainer(
@@ -163,16 +165,18 @@ class GuessLocationApi(remote.Service):
     )
     def get_games_by_user(self, request):
         """Get list of games (active or all) by user_name.
-        :param request: user_name, all_games
+        :param request: user_name, game_over
         """
         user = models.User.query(models.User.name == request.user_name).get()
         if not user:
             raise endpoints.NotFoundException('A User with that name does not exist!')
 
-        games = models.Game.get_games_by_user(user, request.all_games)
+        games = models.Game.get_all_games(user=user, game_over=request.game_over)
         active_message = ''
-        if not request.all_games:
-            active_message = 'active '
+        if request.game_over:
+            active_message += 'completed '
+        elif request.game_over is False:
+            active_message += 'active '
 
         if not games:
             raise endpoints.NotFoundException('No {}games found!'.format(active_message))
@@ -232,9 +236,16 @@ class GuessLocationApi(remote.Service):
 
         return forms.ScoreForms(items=top_scores_list[0:request.max_results], message='Top scores')
 
+    @staticmethod
+    def _cache_user_rankings():
+        """Populates memcache with rankings by avg guess rate"""
+        print 'Auto caching'
+        rankings_list = gl.get_user_rankings()
+        memcache.set(MEMCACHE_USER_RANKINGS, rankings_list)
+
     @endpoints.method(
         request_message=forms.MaxResultsRequestForm,
-        response_message=forms.UserRankForm,
+        response_message=forms.UserRankForms,
         path='get_user_rankings',
         name='get_user_rankings',
         http_method='GET'
@@ -244,7 +255,30 @@ class GuessLocationApi(remote.Service):
         :param request: max_results (optional)
         :return: Top users by ranking metric.
         """
+        rankings_list = memcache.get(MEMCACHE_USER_RANKINGS)
+        message = 'User Rankings'
 
+        if not rankings_list:
+            print 'Manual Caching'
+            rankings_list = gl.get_user_rankings()
+            memcache.set(MEMCACHE_USER_RANKINGS, rankings_list)
+
+        if request.max_results:
+            rankings_list = rankings_list[0:request.max_results]
+            message += ' - limited to top {}'.format(request.max_results)
+
+        form_list = []
+        for user_dict in rankings_list:
+            form = forms.UserRankForm(
+                user_name=user_dict['user_name'],
+                guess_rate=user_dict['guess_rate']
+            )
+            form_list.append(form)
+
+        return forms.UserRankForms(items=form_list, message=message)
+
+        # perfect to run this as a task or cron job.
+        # and set to MEMCACHE to be pulled.
 
     # To be implemented:
     # cancel_game - cancels game in progress.  boolean property for canceled?
