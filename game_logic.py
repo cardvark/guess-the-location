@@ -15,6 +15,7 @@ Rules:
     - 3) Monument name, min zoom out 6 (2)
 - If failed, set zoom to 4 and city name.
 - Score is based on how many tries.
+- Score bonus applied for number of potential cities. (increases with more regions selected on game creation)
 
 """
 
@@ -148,6 +149,7 @@ def evaluate_question_response_form(city_question, message):
 
     if city_question.question_over:
         parent_game = city_question.key.parent().get()
+
         form.question_score = get_question_points(city_question)
         form.min_zoom = MINZOOM_DICT[0]
         form.cities_remaining = parent_game.cities_remaining
@@ -155,6 +157,7 @@ def evaluate_question_response_form(city_question, message):
         form.city_name = city_question.city_name
         if parent_game.game_over:
             score_object = models.Score.get_from_parent(parent_game.key)
+
             form.total_score = score_object.total_score
             form.bonus_modifier = calculate_bonus(score_object)
             form.bonus_score = score_object.bonus_score

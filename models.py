@@ -279,10 +279,7 @@ class Game(ndb.Model):
 
 
 class CityQuestion(ndb.Model):
-    """City question object
-    - Always built w/ Game parent.
-
-    """
+    """City question object"""
     city_name = ndb.StringProperty()
     monument = ndb.KeyProperty(required=True, kind='Monument')
     attempts_allowed = ndb.IntegerProperty(required=True)
@@ -290,6 +287,7 @@ class CityQuestion(ndb.Model):
     question_over = ndb.BooleanProperty(default=False)
     guessed_correct = ndb.BooleanProperty()
     guess_history = ndb.StringProperty(repeated=True)
+    date = ndb.DateTimeProperty(auto_now_add=True)
 
     @classmethod
     def new_city_question(cls, game_parent_key, city_name, monument_key, attempts_allowed):
@@ -304,9 +302,13 @@ class CityQuestion(ndb.Model):
         return new_question
 
     @classmethod
-    def get_questions_from_parent(cls, parent_game_key):
-        questions_list = cls.query(ancestor=parent_game_key).fetch()
-        return questions_list
+    def get_questions_from_parent(cls, parent_game_key, ordered=False):
+        questions_query = cls.query(ancestor=parent_game_key)
+
+        if ordered:
+            questions_query = questions_query.order(cls.date)
+
+        return questions_query.fetch()
 
     def to_form(self, message):
         """Returns a QuestionResponseForm representation of the CityQuestion"""

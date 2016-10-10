@@ -14,3 +14,8 @@ indexes:
   properties:
   - name: region
   - name: city_name
+
+- kind: CityQuestion
+  ancestor: yes
+  properties:
+  - name: date

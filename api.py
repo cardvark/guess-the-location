@@ -7,40 +7,40 @@ Guess the location game server-side Python App Engine
 Error checking for user inputs primarily handled here.
 
 """
-
+# External libraries
 import logging
 import endpoints
 from protorpc import remote, messages, message_types
 from google.appengine.api import memcache
 from google.appengine.api import taskqueue
 
+# Internal modules
 import foursquareApi as fApi
 import models
 import game_logic as gl
 import utils
 import forms
 from settings import *
+
+# Ensures all characters can be handled (foreign language covered)
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
+
 
 EMAIL_SCOPE = endpoints.EMAIL_SCOPE
 API_EXPLORER_CLIENT_ID = endpoints.API_EXPLORER_CLIENT_ID
 
 MEMCACHE_USER_RANKINGS = 'USER_RANKINGS'
 
-NEW_USER_POST_REQUEST = endpoints.ResourceContainer(forms.UserForm)
-NEW_GAME_POST_REQUEST = endpoints.ResourceContainer(forms.NewGameForm)
-QUESTION_GET_REQUEST = endpoints.ResourceContainer(
+GAME_KEY_GET_CONTAINER = endpoints.ResourceContainer(
     message_types.VoidMessage,
     urlsafe_game_key=messages.StringField(1, required=True)
 )
-QUESTION_ATTEMPT_POST_REQUEST = endpoints.ResourceContainer(
+QUESTION_ATTEMPT_POST_CONTAINER = endpoints.ResourceContainer(
     forms.QuestionAttemptForm,
     urlsafe_question_key=messages.StringField(1, required=True)
 )
-# USER_GAMES_GET_REQUEST = endpoints.ResourceContainer(forms.UserGamesRequestForm)
-# HIGH_SCORES_GET_REQUEST = endpoints.ResourceContainer(forms.ScoresRequestForm)
 
 
 @endpoints.api(
@@ -96,7 +96,7 @@ class GuessLocationApi(remote.Service):
         return game.to_form('New game created.  Best of luck!')
 
     @endpoints.method(
-        request_message=QUESTION_GET_REQUEST,
+        request_message=GAME_KEY_GET_CONTAINER,
         response_message=forms.QuestionResponseForm,
         path='get_question',
         name='get_question',
@@ -121,7 +121,7 @@ class GuessLocationApi(remote.Service):
         return gl.evaluate_question_response_form(question, message)
 
     @endpoints.method(
-        request_message=QUESTION_ATTEMPT_POST_REQUEST,
+        request_message=QUESTION_ATTEMPT_POST_CONTAINER,
         response_message=forms.QuestionResponseForm,
         path='submit_question_guess',
         name='submit_question_guess',
@@ -278,13 +278,70 @@ class GuessLocationApi(remote.Service):
 
         return forms.UserRankForms(items=form_list, message=message)
 
-        # perfect to run this as a task or cron job.
-        # and set to MEMCACHE to be pulled.
+    def _extract_guesses_from_question(self, question):
+        """Extract guesses and build guess form list from a question"""
+        guess_history = question.guess_history
+        guess_form_list = []
+
+        for guess in guess_history:
+            guess_form = forms.GuessResponseForm()
+            guess_form.user_guess = guess
+            guess_form.guessed_correct = gl.check_city_question_guess(question, guess)
+
+            guess_form_list.append(guess_form)
+
+        return guess_form_list
+
+    def _extract_questions_from_game(self, game):
+        """Extract questions and build questions form list from a game"""
+        questions_list = models.CityQuestion.get_questions_from_parent(game.key, ordered=True)
+        question_form_list = []
+
+        for question in questions_list:
+            question_form = forms.QuestionHistoryForm()
+            question_form.city_name = question.city_name
+            question_form.monument_name = question.monument.get().name
+            if question.question_over:
+                question_form.question_score = gl.get_question_points(question)
+
+            question_form.guess_responses = self._extract_guesses_from_question(question)
+
+            question_form_list.append(question_form)
+
+        return question_form_list
+
+    # TODO: get the questions and responses sorted in the right order.
+
+    @endpoints.method(
+        request_message=GAME_KEY_GET_CONTAINER,
+        response_message=forms.GameHistoryForm,
+        path='get_game_history',
+        name='get_game_history',
+        http_method='GET'
+    )
+    def get_game_history(self, request):
+        """Get a game's guess and response history
+        :param request: urlsafe_game_key
+        """
+        game = utils.get_by_urlsafe(request.urlsafe_game_key, models.Game)
+        game_form = forms.GameHistoryForm()
+
+        game_form.user_name = game.user.get().name
+        game_form.regions = game.regions
+
+        score_object = models.Score.get_from_parent(game.key)
+        game_form.total_score = score_object.total_score
+        game_form.game_over = game.game_over
+        if game.game_over:
+            game_form.bonus_modifier = gl.calculate_bonus(score_object)
+            game_form.bonus_score = score_object.bonus_score
+
+        game_form.question_history = self._extract_questions_from_game(game)
+
+        return game_form
+
 
     # To be implemented:
-    # cancel_game - cancels game in progress.  boolean property for canceled?
-    # get_high_scores - descending order.  optional param "number_of_results" to limit # of results returned.
-    # get_user_rankings - all users ranked by performance.  Includes name and performance indicator. win/loss ratio or some such.
     # get_game_history - provides history of moves (with responses) for each game.
 
     # cron job of some kinds.  and notifications.

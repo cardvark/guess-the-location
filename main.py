@@ -68,12 +68,15 @@ class UpdateUserRankingsCache(webapp2.RequestHandler):
 class PlayGroundHandler(webapp2.RequestHandler):
     def get(self):
         """General testing ground"""
-        user = models.User.query(models.User.name == 'jimmy').get()
-        all_users = models.User.query().fetch()
-        for user in all_users:
-            attempts = gl.avg_guess_rate(user)
-            if attempts is not None:
-                print user.name, '{:.4f}'.format(attempts)
+        # user = models.User.query(models.User.name == 'jimmy').get()
+        # all_users = models.User.query().fetch()
+        # for user in all_users:
+        #     attempts = gl.avg_guess_rate(user)
+        #     if attempts is not None:
+        #         print user.name, '{:.4f}'.format(attempts)
+
+        ndb.delete_multi(models.Game.query().fetch(keys_only=True))
+        ndb.delete_multi(models.CityQuestion.query().fetch(keys_only=True))
 
 
         # print models.City.get_available_regions()
