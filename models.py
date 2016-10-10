@@ -167,6 +167,13 @@ class Monument(ndb.Model):
 
         return monument
 
+    @classmethod
+    def get_monuments_from_parent(cls, city_key):
+        """Obtain all monuments from a given city"""
+        monuments_query = cls.query(ancestor=city_key)
+
+        return monuments_query.fetch()
+
 
 class Game(ndb.Model):
     """Game object"""

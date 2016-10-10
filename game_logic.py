@@ -102,7 +102,7 @@ def get_new_city_question(game):
     recent_cities = update_recent_cities(new_city_key.urlsafe(), recent_cities)
 
     # Get a monument.
-    monuments_list = new_city_key.get().get_monuments()
+    monuments_list = models.Monument.get_monuments_from_parent(new_city_key)
     new_monument_key = get_unique_random_key(previous_monuments, monuments_list)
 
     # Create new city question
