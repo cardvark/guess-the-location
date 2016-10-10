@@ -84,6 +84,9 @@ class GuessLocationApi(remote.Service):
         if not user:
             raise endpoints.NotFoundException('A User with that name does not exist!')
 
+        if request.cities_total < 1:
+            raise endpoints.BadRequestException('Must have at least 1 city.')
+
         if request.cities_total > gl.MAX_CITY_QUESTIONS:
             raise endpoints.BadRequestException('Max number of cities is {}'.format(gl.MAX_CITY_QUESTIONS))
 
