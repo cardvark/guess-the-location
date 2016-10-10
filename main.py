@@ -27,7 +27,7 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-logging.getLogger().addHandler(logging.StreamHandler())
+# logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
 
 class BuildCityDataHandler(webapp2.RequestHandler):
     def get(self):
@@ -58,7 +58,7 @@ class BuildMonumentsDataHandler(webapp2.RequestHandler):
                 mon = models.Monument.add_monument(monument, city.key)
                 log_msg = '{city}, {monument}'.format(city=city.city_name, monument=mon.name)
                 logging.debug(log_msg)
-                print city.city_name, mon.name
+                # print city.city_name, mon.name
 
 
 class UpdateUserRankingsCache(webapp2.RequestHandler):

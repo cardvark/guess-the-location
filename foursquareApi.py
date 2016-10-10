@@ -9,6 +9,7 @@ Guess the location game server-side Python App Engine
 """
 import requests
 import requests_toolbelt.adapters.appengine
+import sys
 import logging
 
 # import json
@@ -16,7 +17,7 @@ import logging
 
 from settings import FOURSQUARE_CLIENT_ID, FOURSQUARE_CLIENT_SECRET
 
-logging.getLogger().addHandler(logging.StreamHandler())
+# logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
 requests_toolbelt.adapters.appengine.monkeypatch()
 
 
