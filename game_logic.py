@@ -23,6 +23,7 @@ import models
 import random
 import forms
 from google.appengine.api import taskqueue
+import endpoints
 
 # Game constants
 SCORE_DICT = {
@@ -103,6 +104,12 @@ def get_new_city_question(game):
 
     # Get a monument.
     monuments_list = models.Monument.get_monuments_from_parent(new_city_key)
+
+    while not monuments_list:
+        monuments_list = models.Monument.get_monuments_from_parent(new_city_key)
+
+    # if not monuments_list:
+    #     raise endpoints.NotFoundException('Empty list! ' + new_city_key.get().city_name)
     new_monument_key = get_unique_random_key(previous_monuments, monuments_list)
 
     # Create new city question
@@ -145,6 +152,7 @@ def evaluate_question_response_form(city_question, message):
 
     form.min_zoom = MINZOOM_DICT[city_question.attempts_remaining]
     form.urlsafe_city_key = city_question.key.urlsafe()
+    form.attempts_remaining = city_question.attempts_remaining
     form.message = message
 
     if city_question.question_over:

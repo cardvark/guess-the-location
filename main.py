@@ -13,7 +13,8 @@ created by James Wang, 2016-09-29
 __author__ = 'wang.james.j@gmail.com'
 
 import webapp2
-import sys
+import logging
+
 # from google.appengine.api import app_identity
 # from google.appengine.api import mail
 from api import GuessLocationApi
@@ -22,9 +23,11 @@ import foursquareApi as fApi
 import game_logic as gl
 from google.appengine.ext import ndb
 
+import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
+logging.getLogger().addHandler(logging.StreamHandler())
 
 class BuildCityDataHandler(webapp2.RequestHandler):
     def get(self):
@@ -48,8 +51,13 @@ class BuildMonumentsDataHandler(webapp2.RequestHandler):
 
             monuments_list = fApi.monuments_by_city(city.city_name)
 
+            if not monuments_list:
+                logging.error('No monuments found for ' + city.city_name)
+
             for monument in monuments_list:
                 mon = models.Monument.add_monument(monument, city.key)
+                log_msg = '{city}, {monument}'.format(city=city.city_name, monument=mon.name)
+                logging.debug(log_msg)
                 print city.city_name, mon.name
 
 
@@ -74,10 +82,30 @@ class PlayGroundHandler(webapp2.RequestHandler):
         #     attempts = gl.avg_guess_rate(user)
         #     if attempts is not None:
         #         print user.name, '{:.4f}'.format(attempts)
+        city = models.City.get_city('San Francisco', 'United States', 'North America')
 
-        ndb.delete_multi(models.Game.query().fetch(keys_only=True))
-        ndb.delete_multi(models.CityQuestion.query().fetch(keys_only=True))
+        monuments_list = fApi.monuments_by_city(city.city_name)
 
+        if not monuments_list:
+            logging.error('No monuments found for ' + city.city_name)
+
+        for monument in monuments_list:
+            mon = models.Monument.add_monument(monument, city.key)
+            log_msg = '{city}, {monument}'.format(city=city.city_name, monument=mon.name)
+            logging.debug(log_msg)
+            # print city.city_name, mon.name
+
+
+        # cities_list = models.City.query().fetch()
+        # for city in cities_list:
+        #     print '------------------------------------------------------'
+        #     print city.city_name
+        #     monuments_list = models.Monument.get_monuments_from_parent(city.key)
+        #     for monument in monuments_list:
+        #         print city.city_name, monument.name
+        #     # for i in range(100):
+            #     monument = gl.get_unique_random_key([], monuments_list)
+            #     print monument.get().name
 
         # print models.City.get_available_regions()
 

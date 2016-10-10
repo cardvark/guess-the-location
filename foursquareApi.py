@@ -9,14 +9,18 @@ Guess the location game server-side Python App Engine
 """
 import requests
 import requests_toolbelt.adapters.appengine
+import logging
+
 # import json
 # import random
 
 from settings import FOURSQUARE_CLIENT_ID, FOURSQUARE_CLIENT_SECRET
 
+logging.getLogger().addHandler(logging.StreamHandler())
 requests_toolbelt.adapters.appengine.monkeypatch()
 
 
+# TODO: move errors over to logging.
 def get_url_from_id(venue_id):
     print 'Getting url for ' + venue_id
     api_url = 'https://api.foursquare.com/v2/venues/' + venue_id

@@ -171,8 +171,9 @@ class Monument(ndb.Model):
     def get_monuments_from_parent(cls, city_key):
         """Obtain all monuments from a given city"""
         monuments_query = cls.query(ancestor=city_key)
+        monuments_list = monuments_query.fetch()
 
-        return monuments_query.fetch()
+        return monuments_list
 
 
 class Game(ndb.Model):
