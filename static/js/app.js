@@ -57,10 +57,11 @@ var ViewModel = function() {
     self.monumentName = ko.observable();
 
     // Feedback observables.
-    var startingHtml = '<h4>Would you like to play game?<h4>';
-    startingHtml += '<br>Create a new user and start a game!';
-    startingHtml += '<br><br>Guess the city from the map and a random monument.';
+    var startingHtml = '<h4>Would you like to play a game?</h4>';
+    startingHtml += 'Create a new user and start a game!';
+    startingHtml += '<br><br>Guess the city from the map.';
     startingHtml += '<br><br>Three tries per city. A wrong answer provides more information but lowers the score.';
+    startingHtml += '<br><br>View the <a href="https://github.com/cardvark/guess-the-location/blob/master/README.md">README</a> here.';
     self.genericFeedback = ko.observable(startingHtml);
     self.monumentInfoFeedback = ko.observable();
 
