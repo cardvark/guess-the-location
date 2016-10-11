@@ -10,6 +10,7 @@ Error checking for user inputs primarily handled here.
 # External libraries
 import logging
 import endpoints
+import re
 from protorpc import remote, messages, message_types
 from google.appengine.api import memcache
 from google.appengine.api import taskqueue
@@ -42,6 +43,9 @@ QUESTION_ATTEMPT_POST_CONTAINER = endpoints.ResourceContainer(
     urlsafe_question_key=messages.StringField(1, required=True)
 )
 
+USER_REG_CHECK = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
+EMAIL_REG_CHECK = re.compile(r"^[\S]+@[\S]+.[\S]+$")
+
 
 @endpoints.api(
     name='guess_the_location',
@@ -51,6 +55,10 @@ QUESTION_ATTEMPT_POST_CONTAINER = endpoints.ResourceContainer(
 )
 class GuessLocationApi(remote.Service):
     """Guess the location game API"""
+
+    def _reg_check(self, string, reg_pattern):
+        return reg_pattern.match(string)
+
 
     @endpoints.method(
         request_message=forms.UserForm,
@@ -65,6 +73,12 @@ class GuessLocationApi(remote.Service):
         """
         if models.User.query(models.User.name == request.user_name).get():
             raise endpoints.ConflictException('A user with that name already exists!')
+
+        if not self._reg_check(request.user_name, USER_REG_CHECK):
+            raise endpoints.BadRequestException('Invalid username.')
+
+        if request.email and not self._reg_check(request.email, EMAIL_REG_CHECK):
+            raise endpoints.BadRequestException('Invalid email.')
 
         user = models.User.add_user(request.user_name, request.email)
         return forms.UserForm(user_name=user.name, email=user.email)
@@ -116,6 +130,9 @@ class GuessLocationApi(remote.Service):
         if not user:
             raise endpoints.NotFoundException('A User with that name does not exist!')
 
+        if not request.regions:
+            raise endpoints.BadRequestException('Must input one or more accepted regions.')
+
         if request.cities_total < 1:
             raise endpoints.BadRequestException('Must have at least 1 city.')
 
@@ -126,7 +143,6 @@ class GuessLocationApi(remote.Service):
             raise endpoints.BadRequestException('Region(s) requested are not available.')
 
         game = models.Game.new_game(user, request.regions, request.cities_total)
-        game_score = models.Score.new_score(user.key, game.key)
 
         return game.to_form('New game created.  Best of luck!')
 
@@ -251,6 +267,7 @@ class GuessLocationApi(remote.Service):
 
         return game.to_form('Game canceled.')
 
+    # TODO: possibly use memcache.
     @endpoints.method(
         request_message=forms.MaxResultsRequestForm,
         response_message=forms.ScoreForms,
@@ -263,17 +280,25 @@ class GuessLocationApi(remote.Service):
         :param request: max_results (optional)
         :return: Top games by score, Score and User name.
         """
-        inactive_games = models.Game.get_all_games(game_over=True, keys_only=True)
+        if request.max_results and request.max_results < 0:
+            raise endpoints.BadRequestException('max_results must not be less than 0')
+
+        inactive_games = models.Game.get_all_games(game_over=True, keys_only=True, completed=True)
         score_results = models.Score.get_top_scores()
         top_scores_list = []
+
+        i = 0
         for score in score_results:
+            if i == request.max_results:
+                break
             if score.key.parent() in inactive_games:
                 top_scores_list.append(score.to_form())
+                i += 1
 
         if not top_scores_list:
             raise endpoints.NotFoundException('No completed game scores found!')
 
-        return forms.ScoreForms(items=top_scores_list[0:request.max_results], message='Top scores')
+        return forms.ScoreForms(items=top_scores_list, message='Top scores')
 
     @staticmethod
     def _cache_user_rankings():
@@ -303,6 +328,8 @@ class GuessLocationApi(remote.Service):
             memcache.set(MEMCACHE_USER_RANKINGS, rankings_list)
 
         if request.max_results:
+            if request.max_results < 0:
+                raise endpoints.BadRequestException('max_results must not be less than 0')
             rankings_list = rankings_list[0:request.max_results]
             message += ' - limited to top {}'.format(request.max_results)
 

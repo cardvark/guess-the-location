@@ -130,6 +130,12 @@ var ViewModel = function() {
         var cities_total = self.newGameTotalCitiesInput();
         var feedback = '';
 
+        if ( !regions ) {
+            feedback += 'No region selected.  Choosing North America by default.<br><br>';
+            regions = 'North America';
+            self.newGameRegionsInput(regions);
+        }
+
         var regions_arr = regions.split( ',' ).map(function ( word ) {
             return $.trim(word);
         });
