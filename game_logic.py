@@ -226,3 +226,28 @@ def get_user_rankings():
     rankings_list = sorted(rankings_list, key=lambda x: x['guess_rate'])
 
     return rankings_list
+
+
+def get_last_move_time(game):
+    """Find the last time the user made a move on a game"""
+    if game.active_question:
+        # print 'question, ', game.active_question.get().date
+        return game.active_question.get().date
+
+    # print 'game, ', game.last_modified
+    return game.last_modified
+
+
+def filter_games_by_time(games, min_time, max_time):
+    """Filter list of games by min and max times user last made a move"""
+
+    def filter_function(game):
+        last_move_time = get_last_move_time(game)
+        if not last_move_time:
+            return False
+
+        return max_time < last_move_time and last_move_time <= min_time
+
+    filtered_games = filter(filter_function, games)
+
+    return filtered_games

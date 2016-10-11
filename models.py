@@ -64,6 +64,15 @@ class User(ndb.Model):
         user.put()
         return user
 
+    @classmethod
+    def get_all_users(cls, email_only=False):
+        """Get all users"""
+        users = cls.query()
+        if email_only:
+            users = users.filter(cls.email != None)
+
+        return users.fetch()
+
 
 class City(ndb.Model):
     """City object"""
@@ -190,6 +199,7 @@ class Game(ndb.Model):
     cities_remaining = ndb.IntegerProperty()
     active_question = ndb.KeyProperty(kind='CityQuestion')
     date = ndb.DateTimeProperty(auto_now_add=True)
+    last_modified = ndb.DateTimeProperty(auto_now=True)
 
     @classmethod
     def new_game(cls, user, regions_list, cities_total):
@@ -224,28 +234,6 @@ class Game(ndb.Model):
         if num_limit:
             return game_query.fetch(num_limit, keys_only=keys_only)
         return game_query.fetch(keys_only=keys_only)
-
-    # @classmethod
-    # def get_games_by_user(cls, user, all_games):
-    #     filters = [{'field': 'user', 'operator': '=', 'value': user.key}]
-    #     if not all_games:
-    #         active_filter = {
-    #             'field': 'game_over',
-    #             'operator': '=',
-    #             'value': False
-    #         }
-    #         filters.append(active_filter)
-
-    #     games_query = cls.query()
-    #     for fltr in filters:
-    #         formatted_filter = ndb.query.FilterNode(
-    #             fltr['field'],
-    #             fltr['operator'],
-    #             fltr['value']
-    #             )
-    #         games_query = games_query.filter(formatted_filter)
-
-    #     return games_query.fetch()
 
     def to_form(self, message=None):
         """Return a GameForm representation of the Game"""
@@ -299,7 +287,7 @@ class CityQuestion(ndb.Model):
     question_over = ndb.BooleanProperty(default=False)
     guessed_correct = ndb.BooleanProperty()
     guess_history = ndb.StringProperty(repeated=True)
-    date = ndb.DateTimeProperty(auto_now_add=True)
+    date = ndb.DateTimeProperty(auto_now=True)
 
     @classmethod
     def new_city_question(cls, game_parent_key, city_name, monument_key, attempts_allowed):

@@ -14,6 +14,7 @@ __author__ = 'wang.james.j@gmail.com'
 
 import webapp2
 import logging
+import datetime
 
 # from google.appengine.api import app_identity
 # from google.appengine.api import mail
@@ -22,6 +23,7 @@ import models
 import foursquareApi as fApi
 import game_logic as gl
 from google.appengine.ext import ndb
+from google.appengine.api import mail, app_identity
 
 import sys
 reload(sys)
@@ -68,6 +70,22 @@ class UpdateUserRankingsCache(webapp2.RequestHandler):
         self.response.set_status(204)
 
 
+class SendReminderEmail(webapp2.RequestHandler):
+    def get(self):
+        """Send reminder email to user regarding unfinished games.  Runs hourly, checks for games without movement for X hours"""
+        min_inactive = 0.01  # hours inactive
+        max_inactive = 0.1  # none older than these hours.
+
+        now = datetime.datetime.now()
+        min_time = now - datetime.timedelta(hours=min_inactive)
+        max_time = now - datetime.timedelta(hours=max_inactive)
+
+        app_id = app_identity.get_application_id()
+        valid_users = models.User.get_all_users(email_only=True)
+        incomplete_games = models.Game.get_all_games(game_over=False, completed=False)
+        filtered_games = gl.filter_games_by_time(incomplete_games, min_time, max_time)
+
+
 # class CronTasksHandler(webapp2.RequestHandler):
 #     """Cron jobs into taskqueue"""
 #     taskqueue.add(url='/jobs/build_monuments_data')
@@ -76,24 +94,39 @@ class UpdateUserRankingsCache(webapp2.RequestHandler):
 class PlayGroundHandler(webapp2.RequestHandler):
     def get(self):
         """General testing ground"""
+        min_inactive = 0.01  # hours inactive
+        max_inactive = 0.1  # none older than these hours.
+
+        now = datetime.datetime.now()
+        min_time = now - datetime.timedelta(hours=min_inactive)
+        max_time = now - datetime.timedelta(hours=max_inactive)
+
+        app_id = app_identity.get_application_id()
+        valid_users = models.User.get_all_users(email_only=True)
+        incomplete_games = models.Game.get_all_games(game_over=False, completed=False)
+        filtered_games = gl.filter_games_by_time(incomplete_games, min_time, max_time)
+
+        for gam in filtered_games:
+            print gl.get_last_move_time(gam)
+
         # user = models.User.query(models.User.name == 'jimmy').get()
         # all_users = models.User.query().fetch()
         # for user in all_users:
         #     attempts = gl.avg_guess_rate(user)
         #     if attempts is not None:
-        #         print user.name, '{:.4f}'.format(attempts)
-        city = models.City.get_city('San Francisco', 'United States', 'North America')
+        # #         print user.name, '{:.4f}'.format(attempts)
+        # city = models.City.get_city('San Francisco', 'United States', 'North America')
 
-        monuments_list = fApi.monuments_by_city(city.city_name)
+        # monuments_list = fApi.monuments_by_city(city.city_name)
 
-        if not monuments_list:
-            logging.error('No monuments found for ' + city.city_name)
+        # if not monuments_list:
+        #     logging.error('No monuments found for ' + city.city_name)
 
-        for monument in monuments_list:
-            mon = models.Monument.add_monument(monument, city.key)
-            log_msg = '{city}, {monument}'.format(city=city.city_name, monument=mon.name)
-            logging.debug(log_msg)
-            # print city.city_name, mon.name
+        # for monument in monuments_list:
+        #     mon = models.Monument.add_monument(monument, city.key)
+        #     log_msg = '{city}, {monument}'.format(city=city.city_name, monument=mon.name)
+        #     logging.debug(log_msg)
+        #     # print city.city_name, mon.name
 
 
         # cities_list = models.City.query().fetch()
