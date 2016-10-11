@@ -9,7 +9,6 @@ Guess the location game server-side Python App Engine
 """
 import requests
 import requests_toolbelt.adapters.appengine
-import sys
 import logging
 
 # import json
@@ -17,13 +16,14 @@ import logging
 
 from settings import FOURSQUARE_CLIENT_ID, FOURSQUARE_CLIENT_SECRET
 
-# logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
 requests_toolbelt.adapters.appengine.monkeypatch()
 
 
-# TODO: move errors over to logging.
 def get_url_from_id(venue_id):
-    print 'Getting url for ' + venue_id
+    out_msg = 'Getting url for ' + venue_id
+    print out_msg
+    logging.debug(out_msg)
+
     api_url = 'https://api.foursquare.com/v2/venues/' + venue_id
     params = {
         'client_id': FOURSQUARE_CLIENT_ID,
@@ -33,8 +33,9 @@ def get_url_from_id(venue_id):
 
     try:
         response = requests.get(api_url, params=params)
-    except requests.exceptions.RequestException as e:
-        print e
+    except requests.exceptions.RequestException as err:
+        print err
+        logging.error(err)
 
     response = response.json()
     response = response.get('response')
@@ -66,8 +67,9 @@ def monuments_by_city(city):
     # response = json.load(response)
     try:
         response = requests.get(api_url, params=params)
-    except requests.exceptions.RequestException as e:
-        print e
+    except requests.exceptions.RequestException as err:
+        print err
+        logging.error(err)
 
     response = response.json()
 
@@ -75,6 +77,7 @@ def monuments_by_city(city):
         # Skips down to the items list.
         monuments_list = response.get('response').get('groups')[0].get('items')
     except:
+        logging.error('Incorrect data structure in json for ' + city)
         raise Exception('Incorrect data structure in json response.')
 
     output_list = []
@@ -87,15 +90,16 @@ def monuments_by_city(city):
             img_suffix = monument_venue.get('featuredPhotos').get('items')[0].get('suffix')
         except:
             image = False
-            print 'No image, skipping ' + monument_venue.get('name')
+            no_img_msg = 'No image, skipping ' + monument_venue.get('name')
+            print no_img_msg
+            logging.debug(no_img_msg)
 
         page_id = monument_venue.get('id')
         page_url = monument.get('tips')
 
         # 'tips' only exist if user posted a tip.
-        # Without a tip, page url isn't listed in explore response.
-        # Must do a specific page request to obtain the 'canonicalUrl'
-
+        # Without a tip, page url isn't listed in venues/explore response.
+        # Must make a specific page request to obtain the 'canonicalUrl'
         if image:
             if page_url:
                 page_url = page_url[0].get('canonicalUrl')

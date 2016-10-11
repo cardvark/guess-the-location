@@ -21,9 +21,7 @@ Rules:
 
 import models
 import random
-import forms
 from google.appengine.api import taskqueue
-import endpoints
 
 # Game constants
 SCORE_DICT = {

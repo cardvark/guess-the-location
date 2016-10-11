@@ -8,7 +8,6 @@ Error checking for user inputs primarily handled here.
 
 """
 # External libraries
-import logging
 import endpoints
 import re
 from protorpc import remote, messages, message_types
