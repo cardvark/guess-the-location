@@ -73,17 +73,40 @@ class UpdateUserRankingsCache(webapp2.RequestHandler):
 class SendReminderEmail(webapp2.RequestHandler):
     def get(self):
         """Send reminder email to user regarding unfinished games.  Runs hourly, checks for games without movement for X hours"""
-        min_inactive = 0.01  # hours inactive
-        max_inactive = 0.1  # none older than these hours.
+        min_inactive = 0.1  # hours inactive
+        max_inactive = 48 # none older than these hours.
 
         now = datetime.datetime.now()
         min_time = now - datetime.timedelta(hours=min_inactive)
         max_time = now - datetime.timedelta(hours=max_inactive)
 
         app_id = app_identity.get_application_id()
-        valid_users = models.User.get_all_users(email_only=True)
+        valid_users = models.User.get_all_users(email_only=True, keys_only=True)
         incomplete_games = models.Game.get_all_games(game_over=False, completed=False)
         filtered_games = gl.filter_games_by_time(incomplete_games, min_time, max_time)
+
+        for game in filtered_games:
+            if game.user in valid_users:
+                user = game.user.get()
+                print user.name
+                print gl.get_last_move_time(game)
+
+                subject = 'Make a move!  Guess the location city!'
+                body = 'Hey {}, you\'ve got moves left on your guess the locatio game!'.format(user.name)
+                body += '\n\n'
+                body += 'Game key: ' + game.key.urlsafe()
+                if game.active_question:
+                    body += '\nActive question key: ' + game.active_question.urlsafe()
+                body += '\nQuestions remaining: ' + str(game.cities_remaining)
+                body += '\n\n'
+                body += 'https://guess-the-location.appspot.com/'
+
+                mail.send_mail(
+                    'noreply@{}.appspotmail.com'.format(app_id),
+                    user.email,
+                    subject,
+                    body
+                )
 
 
 # class CronTasksHandler(webapp2.RequestHandler):
@@ -94,20 +117,45 @@ class SendReminderEmail(webapp2.RequestHandler):
 class PlayGroundHandler(webapp2.RequestHandler):
     def get(self):
         """General testing ground"""
-        min_inactive = 0.01  # hours inactive
-        max_inactive = 0.1  # none older than these hours.
+        min_inactive = 0.1  # hours inactive
+        max_inactive = 48 # none older than these hours.
 
         now = datetime.datetime.now()
         min_time = now - datetime.timedelta(hours=min_inactive)
         max_time = now - datetime.timedelta(hours=max_inactive)
 
         app_id = app_identity.get_application_id()
-        valid_users = models.User.get_all_users(email_only=True)
+        valid_users = models.User.get_all_users(email_only=True, keys_only=True)
         incomplete_games = models.Game.get_all_games(game_over=False, completed=False)
         filtered_games = gl.filter_games_by_time(incomplete_games, min_time, max_time)
 
-        for gam in filtered_games:
-            print gl.get_last_move_time(gam)
+        # Game filtering seems to work.
+        # TODO:
+        # Next - filter further via valid users.
+        # then figure out email message.
+
+        for game in filtered_games:
+            if game.user in valid_users:
+                user = game.user.get()
+                print user.name
+                print gl.get_last_move_time(game)
+
+                subject = 'Make a move!  Guess the location city!'
+                body = 'Hey {}, you\'ve got moves left on your guess the locatio game!'.format(user.name)
+                body += '\n\n'
+                body += 'Game key: ' + game.key.urlsafe()
+                if game.active_question:
+                    body += '\nActive question key: ' + game.active_question.urlsafe()
+                body += '\nQuestions remaining: ' + str(game.cities_remaining)
+                body += '\n\n'
+                body += 'https://guess-the-location.appspot.com/'
+
+                mail.send_mail(
+                    'noreply@{}.appspotmail.com'.format(app_id),
+                    user.email,
+                    subject,
+                    body
+                )
 
         # user = models.User.query(models.User.name == 'jimmy').get()
         # all_users = models.User.query().fetch()
@@ -220,5 +268,6 @@ app = webapp2.WSGIApplication([
     ('/jobs/build_city_data', BuildCityDataHandler),
     ('/jobs/cache_user_rankings', UpdateUserRankingsCache),
     ('/crons/build_monuments_data', BuildMonumentsDataHandler),
+    ('/crons/email_reminder', SendReminderEmail),
     ('/jobs/playground', PlayGroundHandler)
 ], debug=True)

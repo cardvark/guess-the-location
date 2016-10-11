@@ -30,6 +30,10 @@ handlers:
   script: main.app
   login: admin
 
+- url: /crons/email_reminder
+  script: main.app
+  login: admin
+
 # - url: /jobs/build_monuments_data
 #   script: main.app
 #   login: admin

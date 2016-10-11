@@ -65,13 +65,13 @@ class User(ndb.Model):
         return user
 
     @classmethod
-    def get_all_users(cls, email_only=False):
+    def get_all_users(cls, email_only=False, keys_only=False):
         """Get all users"""
         users = cls.query()
         if email_only:
             users = users.filter(cls.email != None)
 
-        return users.fetch()
+        return users.fetch(keys_only=keys_only)
 
 
 class City(ndb.Model):

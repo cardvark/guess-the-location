@@ -142,6 +142,9 @@ class GuessLocationApi(remote.Service):
             raise endpoints.BadRequestException('Region(s) requested are not available.')
 
         game = models.Game.new_game(user, request.regions, request.cities_total)
+
+        # score object is unused, but needs to be created simultaneously with game.
+        # TODO: maybe move this over to Game model to automatically set up.
         score_object = models.Score.new_score(user.key, game.key)
 
         return game.to_form('New game created.  Best of luck!')
