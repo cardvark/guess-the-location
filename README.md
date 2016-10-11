@@ -161,10 +161,12 @@ Took parts of the FSND design a game skeleton and rewrote, heavily modified, and
 * Response:
   * message -- string.
   * List of score forms. Each contains:
-    * date -- date score was last updated (should be end of game)
-    * total_score -- sum of the game's questions' points.
-    * bonus_score -- score after bonus_modifier.
-    * user_name -- user who created the game.
+    * date -- datetime.  Date score was last updated (should be end of game)
+    * total_score -- integer.
+    * bonus_modifier -- float.
+    * bonus_score -- integer.
+    * user_name -- string.
+    * regions -- List of strings.  Game's selected regions.
 
 #### get_user_rankings
 * Request parameters:
@@ -177,11 +179,28 @@ Took parts of the FSND design a game skeleton and rewrote, heavily modified, and
   * Order is ascending.
 * Response:
   * message -- string.
-
+  * List of user rank forms.  Each contains:
+    * user_name -- string.
+    * guess_rate -- float.  Avg number of guesses per question completed.
+    * questions_count -- integer.  Total number of questions completed.
 
 #### get_game_history
+* Request parameters:
+  * urlsafe_game_key -- string, required.  Game key in websafe format.
+* Function:
+  * Retrieve a game's questions, and each question's guess, response, and score history.
+* Response:
+  * List of question forms.  Each contains:
+    * city_name -- string.
+    * monument_name -- string.
+    * if question is over:
+      * question_score -- integer.
+    * List of guess response forms. Each contains:
+      * user_guess -- string.  User's guess.
+      * guessed_correct -- boolean.  Whether guess was correct.
 
 ## Additional expected functionality:
+
 
 ## Attributions:
 * [Google Maps API](https://developers.google.com/maps/)
