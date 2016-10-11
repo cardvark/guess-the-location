@@ -217,18 +217,8 @@ def get_question_points(city_question):
     return score
 
 
-def avg_guess_rate(user):
+def avg_guess_rate(user, all_questions):
     """Calculate avg number of guesses per question for a user"""
-    completed_games = models.Game.get_all_games(user=user, game_over=True, completed=True)
-
-    all_questions = []
-    for game in completed_games:
-        questions_list = models.CityQuestion.get_questions_from_parent(game.key)
-        all_questions += questions_list
-
-    if len(all_questions) < MINIMUM_QUESTIONS_RANKING:
-        return
-
     guess_attempts_list = []
     for question in all_questions:
         guess_attempts = question.attempts_allowed - question.attempts_remaining
@@ -237,14 +227,38 @@ def avg_guess_rate(user):
     return float(sum(guess_attempts_list)) / len(guess_attempts_list)
 
 
+def get_all_questions(user):
+    """Retrieve list of all questions a user has answered"""
+    completed_games = models.Game.get_all_games(user=user, game_over=True, completed=True)
+
+    all_questions = []
+    for game in completed_games:
+        questions_list = models.CityQuestion.get_questions_from_parent(game.key)
+        all_questions += questions_list
+
+    return all_questions
+
+
 def get_user_rankings():
     """Retrieve user rankings by avg guess rate"""
     all_users = models.User.query().fetch()
     rankings_list = []
+
     for user in all_users:
-        avg_attempts = avg_guess_rate(user)
+        all_questions = get_all_questions(user)
+        questions_count = len(all_questions)
+        if questions_count < MINIMUM_QUESTIONS_RANKING:
+            continue
+
+        avg_attempts = avg_guess_rate(user, all_questions)
         if avg_attempts is not None:
-            rankings_list.append({'user_name': user.name, 'guess_rate': avg_attempts})
+            rankings_list.append({
+                'user_name': user.name,
+                'guess_rate': avg_attempts,
+                'questions_count': questions_count
+            })
+
+    print rankings_list
 
     rankings_list = sorted(rankings_list, key=lambda x: x['guess_rate'])
 

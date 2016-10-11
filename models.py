@@ -389,10 +389,14 @@ class Score(ndb.Model):
         self.put()
 
     def to_form(self):
+        parent_game = self.key.parent().get()
+
         form = forms.ScoreForm()
         form.date = self.date
         form.total_score = self.total_score
         form.bonus_score = self.bonus_score
+        form.bonus_modifier = gl.calculate_bonus(self)
         form.user_name = self.user.get().name
+        form.regions = parent_game.regions
 
         return form

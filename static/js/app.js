@@ -304,6 +304,70 @@ var ViewModel = function() {
             self.isLoading( false );
         });
     };
+
+    self.getHighScores = function() {
+        var maxResults = 10;
+        var feedback = '';
+
+        self.isLoading( true );
+
+        // reset some fields:
+        self.monumentImage( '' );
+        self.monumentName( '' );
+
+        gapi.client.guess_the_location.get_high_scores({
+            max_results: maxResults,
+        }).execute(function ( response ) {
+            if ( response.error ) {
+                feedback += self.errorResponse( response.error );
+            } else {
+                feedback += 'Top scores:';
+                var score_list = response.items;
+
+                score_list.forEach(function ( score_response ) {
+                    feedback += '<br><br>Date: ' + moment(score_response.date).format('LLL');
+                    feedback += '<br>User: ' + score_response.user_name;
+                    feedback += '<br>Regions: ' + score_response.regions.join(', ');
+                    feedback += '<br>Bonus modifier: ' + score_response.bonus_modifier;
+                    feedback += '<br>Bonus score: ' + score_response.bonus_score;
+                });
+
+            }
+            self.genericFeedback( feedback );
+            self.isLoading( false );
+        });
+    };
+
+    self.getUserRanks = function() {
+        var maxResults = 10;
+        var feedback = '';
+
+        self.isLoading( true );
+
+        // reset some fields:
+        self.monumentImage( '' );
+        self.monumentName( '' );
+
+        gapi.client.guess_the_location.get_user_rankings({
+            max_results: maxResults,
+        }).execute(function ( response ) {
+            if ( response.error ) {
+                feedback += self.errorResponse( response.error );
+            } else {
+                feedback += 'Top ranked users:';
+                var rankings_list = response.items;
+
+                rankings_list.forEach(function ( rank_response ) {
+                    feedback += '<br><br>User: ' + rank_response.user_name;
+                    feedback += '<br>Guess rate: ' + rank_response.guess_rate;
+                    feedback += '<br>Questions count: ' + rank_response.questions_count;
+                });
+
+            }
+            self.genericFeedback( feedback );
+            self.isLoading( false );
+        });
+    };
 };
 
 var ViewM = new ViewModel();

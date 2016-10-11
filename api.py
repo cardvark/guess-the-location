@@ -275,7 +275,8 @@ class GuessLocationApi(remote.Service):
         for user_dict in rankings_list:
             form = forms.UserRankForm(
                 user_name=user_dict['user_name'],
-                guess_rate=user_dict['guess_rate']
+                guess_rate=user_dict['guess_rate'],
+                questions_count=user_dict['questions_count']
             )
             form_list.append(form)
 

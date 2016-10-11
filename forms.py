@@ -53,7 +53,9 @@ class ScoreForm(messages.Message):
     total_score = messages.IntegerField(1)
     bonus_score = messages.IntegerField(2)
     date = message_types.DateTimeField(3)
-    user_name = messages.StringField(4)
+    regions = messages.StringField(4, repeated=True)
+    bonus_modifier = messages.FloatField(5)
+    user_name = messages.StringField(6)
 
 
 class ScoreForms(messages.Message):
@@ -107,6 +109,7 @@ class UserRankForm(messages.Message):
     """UserRankingsForm -- outbound form with rank metric"""
     user_name = messages.StringField(1)
     guess_rate = messages.FloatField(2)
+    questions_count = messages.IntegerField(3)
 
 
 class UserRankForms(messages.Message):
