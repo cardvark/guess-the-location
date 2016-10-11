@@ -321,7 +321,7 @@ var ViewModel = function() {
             if ( response.error ) {
                 feedback += self.errorResponse( response.error );
             } else {
-                feedback += 'Top scores:';
+                feedback += 'Top ' + maxResults + ' game scores:';
                 var score_list = response.items;
 
                 score_list.forEach(function ( score_response ) {
@@ -354,7 +354,7 @@ var ViewModel = function() {
             if ( response.error ) {
                 feedback += self.errorResponse( response.error );
             } else {
-                feedback += 'Top ranked users:';
+                feedback += 'Top ' + maxResults + ' ranked users:';
                 var rankings_list = response.items;
 
                 rankings_list.forEach(function ( rank_response ) {

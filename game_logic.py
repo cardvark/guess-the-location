@@ -105,11 +105,12 @@ def get_new_city_question(game):
     # Get a monument.
     monuments_list = models.Monument.get_monuments_from_parent(new_city_key)
 
+    # Safeguards against chance that City has no Monuments
+    # TODO: implement logging / monitoring to ensure Foursquare API cron job
+    # always triggers correctly, avoid this necessity.
     while not monuments_list:
         monuments_list = models.Monument.get_monuments_from_parent(new_city_key)
 
-    # if not monuments_list:
-    #     raise endpoints.NotFoundException('Empty list! ' + new_city_key.get().city_name)
     new_monument_key = get_unique_random_key(previous_monuments, monuments_list)
 
     # Create new city question
