@@ -69,6 +69,38 @@ class GuessLocationApi(remote.Service):
         user = models.User.add_user(request.user_name, request.email)
         return forms.UserForm(user_name=user.name, email=user.email)
 
+    def _evaluate_question_response_form(self, city_question, message):
+        """Evaluate appropriate response based on CityQuestion and Game entity properties"""
+        form = forms.QuestionResponseForm()
+        monument = city_question.monument.get()
+        allowed_properties = gl.get_allowed_properties(city_question)
+
+        form.min_zoom = gl.MINZOOM_DICT[city_question.attempts_remaining]
+        form.urlsafe_city_key = city_question.key.urlsafe()
+        form.attempts_remaining = city_question.attempts_remaining
+        form.message = message
+
+        if city_question.question_over:
+            parent_game = city_question.key.parent().get()
+
+            form.question_score = gl.get_question_points(city_question)
+            form.min_zoom = gl.MINZOOM_DICT[0]
+            form.cities_remaining = parent_game.cities_remaining
+            form.guessed_correct = city_question.guessed_correct
+            form.city_name = city_question.city_name
+            if parent_game.game_over:
+                score_object = models.Score.get_from_parent(parent_game.key)
+
+                form.total_score = score_object.total_score
+                form.bonus_modifier = gl.calculate_bonus(score_object)
+                form.bonus_score = score_object.bonus_score
+                form.game_over = True
+
+        for prop in allowed_properties:
+            setattr(form, prop, getattr(monument, prop))
+
+        return form
+
     @endpoints.method(
         request_message=forms.NewGameForm,
         response_message=forms.GameForm,
@@ -121,7 +153,8 @@ class GuessLocationApi(remote.Service):
             question = gl.get_new_city_question(game)
             message = 'New question!  Good luck!'
 
-        return gl.evaluate_question_response_form(question, message)
+        # return gl.evaluate_question_response_form(question, message)
+        return self._evaluate_question_response_form(question, message)
 
     @endpoints.method(
         request_message=QUESTION_ATTEMPT_POST_CONTAINER,
@@ -139,7 +172,8 @@ class GuessLocationApi(remote.Service):
 
         if question.question_over:
             message = 'This question is resolved!  Try another question.  Answer was: ' + question.city_name
-            return gl.evaluate_question_response_form(question, message)
+            # return gl.evaluate_question_response_form(question, message)
+            return self._evaluate_question_response_form(question, message)
 
         # Shouldn't occur; question should be over before this case can arise.
         if question.attempts_remaining <= 0:
@@ -158,7 +192,8 @@ class GuessLocationApi(remote.Service):
         if game_over:
             message += '<br><br>Game over!  Start a new game!'
 
-        return gl.evaluate_question_response_form(question, message)
+        # return gl.evaluate_question_response_form(question, message)
+        return self._evaluate_question_response_form(question, message)
 
     @endpoints.method(
         request_message=forms.UserGamesRequestForm,

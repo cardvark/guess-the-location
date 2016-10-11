@@ -52,6 +52,7 @@ class User(ndb.Model):
     """User profile"""
     name = ndb.StringProperty(required=True)
     email = ndb.StringProperty()
+    date = ndb.DateTimeProperty(auto_now_add=True)
 
     @classmethod
     def add_user(cls, name, email):
@@ -69,6 +70,7 @@ class City(ndb.Model):
     city_name = ndb.StringProperty(required=True)
     country = ndb.StringProperty()
     region = ndb.StringProperty()
+    date = ndb.DateTimeProperty(auto_now_add=True)
 
     @classmethod
     def get_city(cls, city_name, country, region):
@@ -132,6 +134,7 @@ class Monument(ndb.Model):
     url = ndb.StringProperty()
     img_prefix = ndb.StringProperty()
     img_suffix = ndb.StringProperty()
+    date = ndb.DateTimeProperty(auto_now=True)
 
     @classmethod
     def get_monument_by_fsq_id(cls, fsq_id):
@@ -186,6 +189,7 @@ class Game(ndb.Model):
     cities_total = ndb.IntegerProperty(required=True, default=5)
     cities_remaining = ndb.IntegerProperty()
     active_question = ndb.KeyProperty(kind='CityQuestion')
+    date = ndb.DateTimeProperty(auto_now_add=True)
 
     @classmethod
     def new_game(cls, user, regions_list, cities_total):

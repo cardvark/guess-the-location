@@ -17,6 +17,8 @@ README WIP.
 
 
 ## Front End Game Client Instructions
+Please note that the front end was built as a proof of concept for the game, not as a final polished product.
+
 ### Setup and play
 * Note: additional details on endpoints below.
 * Create a new user (email optional)
@@ -201,6 +203,11 @@ Took parts of the FSND design a game skeleton and rewrote, heavily modified, and
 
 ## Additional expected functionality:
 
+
+## Forthcoming features:
+* Facebook and Google+ login and sharing.
+* Redesigned and rebuilt front end client
+* Potential modifications to game content (cities list, monuments, images)
 
 ## Attributions:
 * [Google Maps API](https://developers.google.com/maps/)
