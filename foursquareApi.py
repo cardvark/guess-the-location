@@ -11,9 +11,6 @@ import requests
 import requests_toolbelt.adapters.appengine
 import logging
 
-# import json
-# import random
-
 from settings import FOURSQUARE_CLIENT_ID, FOURSQUARE_CLIENT_SECRET
 
 requests_toolbelt.adapters.appengine.monkeypatch()
@@ -55,16 +52,7 @@ def monuments_by_city(city):
         'venuePhotos': 1,
         'v': '20130815'
     }
-    # query_params = urllib.urlencode(params)
 
-    # Get call to Foursquare API
-    # try:
-    #     response = urllib2.Request(api_url, query_params)
-    # except urllib2.URLError:
-    #     print 'Caught exception fetching monuments_by_city'
-    #     return
-
-    # response = json.load(response)
     try:
         response = requests.get(api_url, params=params)
     except requests.exceptions.RequestException as err:
@@ -95,15 +83,14 @@ def monuments_by_city(city):
             logging.debug(no_img_msg)
 
         page_id = monument_venue.get('id')
-        page_url = monument.get('tips')
+        page_url = monument.get('tips')  # 'tips' only exist if user posted a tip.
 
-        # 'tips' only exist if user posted a tip.
-        # Without a tip, page url isn't listed in venues/explore response.
-        # Must make a specific page request to obtain the 'canonicalUrl'
         if image:
             if page_url:
                 page_url = page_url[0].get('canonicalUrl')
             else:
+                # Without a tip, page url isn't listed in venues/explore response.
+                # Must make a specific page request to obtain the 'canonicalUrl'
                 page_url = get_url_from_id(page_id)
 
             monument_dict = {

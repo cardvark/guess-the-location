@@ -165,6 +165,7 @@ def manage_city_question_attempt(city_question, guess):
         game_over = parent_game.end_question_update()
 
         if game_over:
+            # Recalculates and caches user rankings
             taskqueue.add(url='/jobs/cache_user_rankings')
             parent_game.end_game()
 
@@ -221,8 +222,6 @@ def get_user_rankings():
                 'questions_count': questions_count
             })
 
-    print rankings_list
-
     rankings_list = sorted(rankings_list, key=lambda x: x['guess_rate'])
 
     return rankings_list
@@ -231,10 +230,8 @@ def get_user_rankings():
 def get_last_move_time(game):
     """Find the last time the user made a move on a game"""
     if game.active_question:
-        # print 'question, ', game.active_question.get().date
         return game.active_question.get().date
 
-    # print 'game, ', game.last_modified
     return game.last_modified
 
 

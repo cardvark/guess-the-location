@@ -8,9 +8,7 @@ Guess the location game server-side Python App Engine
 
 """
 
-from datetime import datetime
 from google.appengine.ext import ndb
-import endpoints
 import forms
 import game_logic as gl
 
@@ -56,7 +54,6 @@ class User(ndb.Model):
 
     @classmethod
     def add_user(cls, name, email):
-        """Add new user"""
         user = cls(
             name=name,
             email=email
@@ -66,7 +63,6 @@ class User(ndb.Model):
 
     @classmethod
     def get_all_users(cls, email_only=False, keys_only=False):
-        """Get all users"""
         users = cls.query()
         if email_only:
             users = users.filter(cls.email != None)
@@ -83,7 +79,6 @@ class City(ndb.Model):
 
     @classmethod
     def get_city(cls, city_name, country, region):
-        """Return city entity via name, country, region"""
         city = cls.query()
         city = city.filter(cls.city_name == city_name)
         city = city.filter(cls.country == country)
@@ -93,7 +88,6 @@ class City(ndb.Model):
 
     @classmethod
     def add_city(cls, city_name, country, region):
-        """Add new city entity, unless already exists"""
         city = cls.get_city(city_name, country, region)
 
         if not city:
@@ -117,7 +111,6 @@ class City(ndb.Model):
 
     @classmethod
     def get_cities_by_regions(cls, regions_list):
-        """Get all cities from regions requested, city_name only"""
         cities_query = cls.query(
             cls.region.IN(regions_list),
             projection=['city_name']
@@ -125,10 +118,7 @@ class City(ndb.Model):
 
         return cities_query.fetch()
 
-    # TODO: potentially swap score to Game.  Keep consistent how to access children.
-
     def get_monuments(self):
-        """Get monuments associated with a given city"""
         monuments = Monument.query(ancestor=self.key).fetch()
 
         return monuments
@@ -181,7 +171,6 @@ class Monument(ndb.Model):
 
     @classmethod
     def get_monuments_from_parent(cls, city_key):
-        """Obtain all monuments from a given city"""
         monuments_query = cls.query(ancestor=city_key)
         monuments_list = monuments_query.fetch()
 
@@ -203,7 +192,6 @@ class Game(ndb.Model):
 
     @classmethod
     def new_game(cls, user, regions_list, cities_total):
-        """Create and return a new game"""
         game = cls(
             user=user.key,
             regions=regions_list,
@@ -216,9 +204,7 @@ class Game(ndb.Model):
 
     @classmethod
     def get_all_games(cls, user=None, game_over=None, num_limit=None, keys_only=False, completed=False):
-        """Return all games, by game_over status and num_limit
-        :param active_status: True, False, or blank.
-        :param num_limit: optional limit to results.
+        """Return all games, with multiple filter options
         """
         game_query = cls.query()
 
@@ -236,7 +222,7 @@ class Game(ndb.Model):
         return game_query.fetch(keys_only=keys_only)
 
     def to_form(self, message=None):
-        """Return a GameForm representation of the Game"""
+        """Build and return a GameForm representation of the Game"""
         form = forms.GameForm()
         form.urlsafe_game_key = self.key.urlsafe()
         form.cities_total = self.cities_total
@@ -252,7 +238,6 @@ class Game(ndb.Model):
 
         return form
 
-    # May deprecate, not sure yet.
     def new_question_update(self, recent_cities, new_monument_key, active_question_key):
         """Update Game entity based on new question"""
         self.last_cities = recent_cities
@@ -310,19 +295,20 @@ class CityQuestion(ndb.Model):
 
         return questions_query.fetch()
 
-    def to_form(self, message):
-        """Returns a QuestionResponseForm representation of the CityQuestion"""
-        form = forms.QuestionResponseForm()
-        form = gl.evaluate_question_response(self, form)
+    # def to_form(self, message):
+    #     """Returns a QuestionResponseForm representation of the CityQuestion"""
+    #     form = forms.QuestionResponseForm()
+    #     form = gl.evaluate_question_response(self, form)
 
-        # Adds own properties + message.
-        form.urlsafe_city_key = self.key.urlsafe()
-        form.attempts_remaining = self.attempts_remaining
-        form.message = message
+    #     # Adds own properties + message.
+    #     form.urlsafe_city_key = self.key.urlsafe()
+    #     form.attempts_remaining = self.attempts_remaining
+    #     form.message = message
 
-        return form
+    #     return form
 
     def guess_update(self, guess):
+        """Update CityQuestion after user guess"""
         self.guess_history.append(guess)
         self.attempts_remaining -= 1
         self.put()
@@ -330,7 +316,7 @@ class CityQuestion(ndb.Model):
         return self.attempts_remaining
 
     def end_question(self, correct=False):
-        """Ends the question. Updates score if correct, based on attempts_remaining"""
+        """End the question. Updates score if correct, based on attempts_remaining"""
         self.question_over = True
         self.guessed_correct = correct
         self.put()
@@ -361,6 +347,7 @@ class Score(ndb.Model):
 
     @classmethod
     def get_top_scores(cls, num_limit=None):
+        """Retrieve top scores ordered by bonus_score"""
         score_query = cls.query()
         score_query = score_query.order(-cls.bonus_score)
         if num_limit:

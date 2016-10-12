@@ -12,10 +12,8 @@ import endpoints
 import re
 from protorpc import remote, messages, message_types
 from google.appengine.api import memcache
-from google.appengine.api import taskqueue
 
 # Internal modules
-import foursquareApi as fApi
 import models
 import game_logic as gl
 import utils
@@ -57,7 +55,6 @@ class GuessLocationApi(remote.Service):
 
     def _reg_check(self, string, reg_pattern):
         return reg_pattern.match(string)
-
 
     @endpoints.method(
         request_message=forms.UserForm,
@@ -172,7 +169,6 @@ class GuessLocationApi(remote.Service):
             question = gl.get_new_city_question(game)
             message = 'New question!  Good luck!'
 
-        # return gl.evaluate_question_response_form(question, message)
         return self._evaluate_question_response_form(question, message)
 
     @endpoints.method(
@@ -191,10 +187,8 @@ class GuessLocationApi(remote.Service):
 
         if question.question_over:
             message = 'This question is resolved!  Try another question.  Answer was: ' + question.city_name
-            # return gl.evaluate_question_response_form(question, message)
             return self._evaluate_question_response_form(question, message)
 
-        # Shouldn't occur; question should be over before this case can arise.
         if question.attempts_remaining <= 0:
             raise endpoints.BadRequestException('No attempts remaining!')
 
@@ -211,7 +205,6 @@ class GuessLocationApi(remote.Service):
         if game_over:
             message += '<br><br>Game over!  Start a new game!'
 
-        # return gl.evaluate_question_response_form(question, message)
         return self._evaluate_question_response_form(question, message)
 
     @endpoints.method(
@@ -379,8 +372,6 @@ class GuessLocationApi(remote.Service):
 
         return question_form_list
 
-    # TODO: get the questions and responses sorted in the right order.
-
     @endpoints.method(
         request_message=GAME_KEY_GET_CONTAINER,
         response_message=forms.GameHistoryForm,
@@ -409,12 +400,5 @@ class GuessLocationApi(remote.Service):
 
         return game_form
 
-
-    # To be implemented:
-    # get_game_history - provides history of moves (with responses) for each game.
-
-    # cron job of some kinds.  and notifications.
-    # full readme
-    # Design thoughts in Design.txt
 
 api = endpoints.api_server([GuessLocationApi])

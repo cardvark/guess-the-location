@@ -202,7 +202,22 @@ Took parts of the FSND design a game skeleton and rewrote, heavily modified, and
       * guessed_correct -- boolean.  Whether guess was correct.
 
 ## Additional expected functionality:
+### Cron jobs:
+* /crons/build_monuments_data
+  * Calls Foursquare API to populate the Monument datastore with Foursquare data.  Should throw errors to the log in case any occur.  Scheduled to run once a week.  Foursquare API requests that devs keep such data relatively up to date.
+  * TODO: have this cron job clear out old monuments that are no longer trending on Foursquare.  Currently only adds new monuments and replaces existing monument data.
+* /crons/email_reminder
+  * Hourly cron job.
+  * Checks for games whose last game move was 24-24.99 hours prior
+  * Sends emails to users with email addresses in the datastore (only once for all un-moved games w/in this time frame).
+  * TODO: rethink this functionality.  Potentially have a better way to queue or flag games for email reminders.
+    * Alternatively, may scrap this entirely.  App Engine's free email quota is extremely low (10 per day).
 
+### Caching:
+* /jobs/cache_user_rankings
+  * Task is run after every completed game.
+  * Caches user rankings to memcache.
+  * Calculates avg # of guesses for each user for each question. (game_logic module, get_user_rankings)
 
 ## Forthcoming features:
 * Facebook and Google+ login and sharing.
