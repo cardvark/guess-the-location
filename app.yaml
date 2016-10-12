@@ -26,6 +26,10 @@ handlers:
   script: main.app
   login: admin
 
+- url: /jobs/send_email
+  script: main.app
+  login: admin
+
 - url: /crons/build_monuments_data
   script: main.app
   login: admin

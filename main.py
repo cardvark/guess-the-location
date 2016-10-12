@@ -16,20 +16,21 @@ import webapp2
 import logging
 import datetime
 
-# from google.appengine.api import app_identity
-# from google.appengine.api import mail
 from api import GuessLocationApi
 import models
 import foursquareApi as fApi
 import game_logic as gl
 from google.appengine.ext import ndb
-from google.appengine.api import mail, app_identity
+from google.appengine.api import mail
+from google.appengine.api import app_identity
+from google.appengine.api import taskqueue
 
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
 # logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
+
 
 class BuildCityDataHandler(webapp2.RequestHandler):
     def get(self):
@@ -70,43 +71,118 @@ class UpdateUserRankingsCache(webapp2.RequestHandler):
         self.response.set_status(204)
 
 
-class SendReminderEmail(webapp2.RequestHandler):
+class SendEmailHandler(webapp2.RequestHandler):
+    def post(self):
+        """Send out email via taskqueue"""
+        logging.debug('New email added: ' + self.request.get('subject'))
+        logging.debug('body: ' + self.request.get('body'))
+        app_id = app_identity.get_application_id()
+        mail.send_mail(
+            'noreply@{}.appspotmail.com'.format(app_id),
+            self.request.get('email'),
+            self.request.get('subject'),
+            self.request.get('body'),
+            html=self.request.get('html')
+        )
+
+        mail.send_mail_to_admins(
+            'noreply@{}.appspotmail.com'.format(app_id),
+            self.request.get('subject'),
+            self.request.get('body'),
+            html=self.request.get('html')
+        )
+
+        # test_subject = 'Just a test'
+        # test_body = """Hey person,
+
+        # This is a thing that might work.
+
+        # I don't know.  http://example.com
+
+        # We'll see.
+
+        # """
+
+        # mail.send_mail_to_admins(
+        #     'noreply@{}.appspotmail.com'.format(app_id),
+        #     test_subject,
+        #     test_body
+        # )
+
+
+# This is shit.  I hate it.  need to reconsider.
+class EmailCronJob(webapp2.RequestHandler):
     def get(self):
         """Send reminder email to user regarding unfinished games.  Runs hourly, checks for games without movement for X hours"""
-        min_inactive = 0.1  # hours inactive
-        max_inactive = 48 # none older than these hours.
+
+        min_inactive = 1  # hours inactive
+        max_inactive = 1.99  # none older than these hours.
 
         now = datetime.datetime.now()
         min_time = now - datetime.timedelta(hours=min_inactive)
         max_time = now - datetime.timedelta(hours=max_inactive)
 
-        app_id = app_identity.get_application_id()
         valid_users = models.User.get_all_users(email_only=True, keys_only=True)
         incomplete_games = models.Game.get_all_games(game_over=False, completed=False)
         filtered_games = gl.filter_games_by_time(incomplete_games, min_time, max_time)
 
         for game in filtered_games:
+            logging.debug('Game! ' + str(game.last_modified))
             if game.user in valid_users:
+                valid_users.remove(game.user)
                 user = game.user.get()
                 print user.name
                 print gl.get_last_move_time(game)
+                logging.debug('Valid game! ' + user.name)
 
                 subject = 'Make a move!  Guess the location city!'
-                body = 'Hey {}, you\'ve got moves left on your guess the locatio game!'.format(user.name)
-                body += '\n\n'
-                body += 'Game key: ' + game.key.urlsafe()
-                if game.active_question:
-                    body += '\nActive question key: ' + game.active_question.urlsafe()
-                body += '\nQuestions remaining: ' + str(game.cities_remaining)
-                body += '\n\n'
-                body += 'https://guess-the-location.appspot.com/'
+                # body = 'Hey {user_name}, you\'ve got moves left on your guess the location game!  (You can find your open games by searching your username in "Get Active Games.")'.format(user_name=user.name)
 
-                mail.send_mail(
-                    'noreply@{}.appspotmail.com'.format(app_id),
-                    user.email,
-                    subject,
-                    body
+                body = """
+                Hey {user_name}, you\'ve got moves left on your guess the location game!  You can find your open games by searching your username in \'Get Active Games\'
+
+                Thanks for playing!
+                """.format(user_name=user.name)
+                html = 'Hey {user_name},'.format(user_name=user.name)
+                html += '<br><br>You\'ve got moves left on your guess the location game!  (You can find your open games by searching your username in \'Get Active Games.\')'
+                html += '<br><br>'
+                html += 'Game key: ' + game.key.urlsafe()
+                html += '<br>'
+                if game.active_question:
+                    html += 'Active question key: ' + game.active_question.urlsafe()
+                    html += '<br>'
+                html += 'Questions remaining: ' + str(game.cities_remaining)
+                html += '<br><br>'
+                html += 'Play the game!'
+
+                taskqueue.add(
+                    params={
+                        'email': user.email,
+                        'subject': subject,
+                        'body': body,
+                        'html': html
+                    },
+                    url='/jobs/send_email',
+                    queue_name='mail-queue'
                 )
+
+        # taskqueue.add(
+        #     params={
+        #         'email': 'bob@email.com',
+        #         'subject': 'boingo boingo',
+        #         'body': 'murp durp'
+        #     },
+        #     url='/jobs/send_email',
+        #     queue_name='mail-queue'
+        # )
+
+        # title = 'boy boy'
+        # text = 'money money!'
+        # mail.send_mail_to_admins(
+        #     'noreply@{}.appspotmail.com'.format(app_id),
+        #     title,
+        #     text
+        # )
 
 
 # class CronTasksHandler(webapp2.RequestHandler):
@@ -117,45 +193,46 @@ class SendReminderEmail(webapp2.RequestHandler):
 class PlayGroundHandler(webapp2.RequestHandler):
     def get(self):
         """General testing ground"""
-        min_inactive = 0.1  # hours inactive
-        max_inactive = 48 # none older than these hours.
 
-        now = datetime.datetime.now()
-        min_time = now - datetime.timedelta(hours=min_inactive)
-        max_time = now - datetime.timedelta(hours=max_inactive)
+        # min_inactive = 0.1  # hours inactive
+        # max_inactive = 48 # none older than these hours.
 
-        app_id = app_identity.get_application_id()
-        valid_users = models.User.get_all_users(email_only=True, keys_only=True)
-        incomplete_games = models.Game.get_all_games(game_over=False, completed=False)
-        filtered_games = gl.filter_games_by_time(incomplete_games, min_time, max_time)
+        # now = datetime.datetime.now()
+        # min_time = now - datetime.timedelta(hours=min_inactive)
+        # max_time = now - datetime.timedelta(hours=max_inactive)
 
-        # Game filtering seems to work.
-        # TODO:
-        # Next - filter further via valid users.
-        # then figure out email message.
+        # app_id = app_identity.get_application_id()
+        # valid_users = models.User.get_all_users(email_only=True, keys_only=True)
+        # incomplete_games = models.Game.get_all_games(game_over=False, completed=False)
+        # filtered_games = gl.filter_games_by_time(incomplete_games, min_time, max_time)
 
-        for game in filtered_games:
-            if game.user in valid_users:
-                user = game.user.get()
-                print user.name
-                print gl.get_last_move_time(game)
+        # # Game filtering seems to work.
+        # # TODO:
+        # # Next - filter further via valid users.
+        # # then figure out email message.
 
-                subject = 'Make a move!  Guess the location city!'
-                body = 'Hey {}, you\'ve got moves left on your guess the locatio game!'.format(user.name)
-                body += '\n\n'
-                body += 'Game key: ' + game.key.urlsafe()
-                if game.active_question:
-                    body += '\nActive question key: ' + game.active_question.urlsafe()
-                body += '\nQuestions remaining: ' + str(game.cities_remaining)
-                body += '\n\n'
-                body += 'https://guess-the-location.appspot.com/'
+        # for game in filtered_games:
+        #     if game.user in valid_users:
+        #         user = game.user.get()
+        #         print user.name
+        #         print gl.get_last_move_time(game)
 
-                mail.send_mail(
-                    'noreply@{}.appspotmail.com'.format(app_id),
-                    user.email,
-                    subject,
-                    body
-                )
+        #         subject = 'Make a move!  Guess the location city!'
+        #         body = 'Hey {}, you\'ve got moves left on your guess the locatio game!'.format(user.name)
+        #         body += '\n\n'
+        #         body += 'Game key: ' + game.key.urlsafe()
+        #         if game.active_question:
+        #             body += '\nActive question key: ' + game.active_question.urlsafe()
+        #         body += '\nQuestions remaining: ' + str(game.cities_remaining)
+        #         body += '\n\n'
+        #         body += 'https://guess-the-location.appspot.com/'
+
+        #         mail.send_mail(
+        #             'noreply@{}.appspotmail.com'.format(app_id),
+        #             user.email,
+        #             subject,
+        #             body
+        #         )
 
         # user = models.User.query(models.User.name == 'jimmy').get()
         # all_users = models.User.query().fetch()
@@ -267,7 +344,8 @@ class PlayGroundHandler(webapp2.RequestHandler):
 app = webapp2.WSGIApplication([
     ('/jobs/build_city_data', BuildCityDataHandler),
     ('/jobs/cache_user_rankings', UpdateUserRankingsCache),
+    ('/jobs/send_email', SendEmailHandler),
     ('/crons/build_monuments_data', BuildMonumentsDataHandler),
-    ('/crons/email_reminder', SendReminderEmail),
+    ('/crons/email_reminder', EmailCronJob),
     ('/jobs/playground', PlayGroundHandler)
 ], debug=True)
