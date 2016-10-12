@@ -85,12 +85,12 @@ class SendEmailHandler(webapp2.RequestHandler):
             html=self.request.get('html')
         )
 
-        mail.send_mail_to_admins(
-            'noreply@{}.appspotmail.com'.format(app_id),
-            self.request.get('subject'),
-            self.request.get('body'),
-            html=self.request.get('html')
-        )
+        # mail.send_mail_to_admins(
+        #     'noreply@{}.appspotmail.com'.format(app_id),
+        #     self.request.get('subject'),
+        #     self.request.get('body'),
+        #     html=self.request.get('html')
+        # )
 
         # test_subject = 'Just a test'
         # test_body = """Hey person,
@@ -115,8 +115,8 @@ class EmailCronJob(webapp2.RequestHandler):
     def get(self):
         """Send reminder email to user regarding unfinished games.  Runs hourly, checks for games without movement for X hours"""
 
-        min_inactive = 1  # hours inactive
-        max_inactive = 1.99  # none older than these hours.
+        min_inactive = 24  # hours inactive
+        max_inactive = 24.99  # none older than these hours.
 
         now = datetime.datetime.now()
         min_time = now - datetime.timedelta(hours=min_inactive)

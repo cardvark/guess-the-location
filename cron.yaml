@@ -5,4 +5,4 @@ cron:
 
 - description: Send email reminders out to users for unfinished games
   url: /crons/email_reminder
-  schedule: every 30 minutes
+  schedule: every 1 hours
