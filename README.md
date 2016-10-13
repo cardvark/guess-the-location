@@ -1,7 +1,7 @@
 # guess-the-location
 Google app engine back end API city location guessing game with Google Maps API and Foursquare API for content.
 
-README WIP.
+[Play the game!](https://guess-the-location.appspot.com/)
 
 ## Setup
 * Clone or [download](https://github.com/cardvark/guess-the-location/archive/master.zip) the repo: `https://github.com/cardvark/guess-the-location.git`
@@ -13,7 +13,6 @@ README WIP.
 * Open browser to [http://localhost:8080](http://localhost:8080) to view front end.
 * Open browser to [http://localhost:8080/_ah/api/explorer](http://localhost:8080/_ah/api/explorer) to view API explorer.
   * Allow unsafe scripts - for chrome, click shield icon in far right of address bar, load unsafe scripts.
-* Live demonstration [hosted on appspot](https://guess-the-location.appspot.com/)
 
 
 ## Front End Game Client Instructions
