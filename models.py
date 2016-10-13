@@ -118,10 +118,10 @@ class City(ndb.Model):
 
         return cities_query.fetch()
 
-    def get_monuments(self):
-        monuments = Monument.query(ancestor=self.key).fetch()
+    # def get_monuments(self):
+    #     monuments = Monument.query(ancestor=self.key).fetch()
 
-        return monuments
+    #     return monuments
 
 
 class Monument(ndb.Model):
