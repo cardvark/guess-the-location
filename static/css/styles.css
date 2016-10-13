@@ -31,6 +31,18 @@
     border: solid black 1px;
 }
 
+a {
+    color: black;
+}
+
+.attribution {
+    color: #777;
+}
+
+.foursquare-logo {
+    height: 25px;
+}
+
 /* Adapted from http://stackoverflow.com/a/38994995/3902579 */
 .left-pane, .map-col {
     -ms-overflow-style: none;  // IE 10+
