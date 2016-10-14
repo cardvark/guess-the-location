@@ -4,7 +4,8 @@
 
 I wanted to build a more ambitious project than was proposed, but not so
 ambitious as to be overwhelming at take a ridiculously long time.  The 'guess
-the city location' idea seemed like a good compromise.  That said, the amount of logic I needed to consider was significantly greater than the guess a
+the city location' idea seemed like a good compromise.  That said, the amount
+of logic I needed to consider was significantly greater than the guess a
 number game, and I realized early on I needed to think through the high level
 and low level details of how this app would work.
 
