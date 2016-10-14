@@ -47,7 +47,7 @@ MONUMENT_PROPERTIES_UNLOCKS_DICT = {
 RECENT_CITIES_LIMIT = 3  # prevents duplicate city question for at least 3
 MAX_CITY_QUESTIONS = 5  # Max 5 city questions per game
 QUESTION_ATTEMPTS = 3  # Max 3 guess attempts per city question.
-MINIMUM_QUESTIONS_RANKING = 5  # Min number of questions to be ranked
+MINIMUM_QUESTIONS_RANKING = 0  # Min number of questions to be ranked
 
 
 def calculate_bonus(score):
