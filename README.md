@@ -206,6 +206,7 @@ Took parts of the FSND design a game skeleton and rewrote, heavily modified, and
   * Ranking metric is avg # of guesses (float) required to complete each question.
     * Perfect score would be 1, complete failure would be 3.
     * game_logic module contains 'MINIMUM_QUESTIONS_RANKING' constant, which indicates minimum number of questions a user must have completed in order to be ranked.  (Currently set to 5)
+    * If no users satisfy above criteria or do not exist, message will be updated to indicate that no users were ranked.
   * Order is ascending.
 
 #### get_game_history

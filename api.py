@@ -338,6 +338,9 @@ class GuessLocationApi(remote.Service):
             )
             form_list.append(form)
 
+        if not form_list:
+            message += '  No users who have ranked yet!'
+
         return forms.UserRankForms(items=form_list, message=message)
 
     def _extract_guesses_from_question(self, question):
