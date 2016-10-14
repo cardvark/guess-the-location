@@ -13,6 +13,12 @@ Google app engine back end API city location guessing game with Google Maps API 
 * Open browser to [http://localhost:8080](http://localhost:8080) to view front end.
 * Open browser to [http://localhost:8080/_ah/api/explorer](http://localhost:8080/_ah/api/explorer) to view API explorer.
   * Allow unsafe scripts - for chrome, click shield icon in far right of address bar, load unsafe scripts.
+* Populate the City datastore with entities by opening browser to [http://localhost:8080/jobs/build_city_data](http://localhost:8080/jobs/build_city_data)
+  * Note: this is a one time requirement to populate the City datastore.
+* Next, populate Monument datastore:
+  * Go to Local project dashboard, cron jobs at [http://localhost:8000/cron](http://localhost:8000/cron)
+  * Find the /crons/build_monument_data job and hit Run Now.
+  * This is a weekly recurring job designed to keep Monuments data from Foursquare up to date.
 
 
 ## Front End Game Client Instructions
