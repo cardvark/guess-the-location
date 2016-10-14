@@ -151,7 +151,7 @@ class GuessLocationApi(remote.Service):
         response_message=forms.QuestionResponseForm,
         path='get_question',
         name='get_question',
-        http_method='GET'
+        http_method='PUT'
     )
     def get_question(self, request):
         """Request question for a game.  Returns active or next question.

@@ -1,8 +1,8 @@
 cron:
 - description: Refresh Monuments Kind every urlsafe_question_key
   url: /crons/build_monuments_data
-  schedule: every 168 hours
+  schedule: every sunday 00:00
 
-- description: Send email reminders out to users for unfinished games
+- description: Check if any reminders need to be sent for inactive games
   url: /crons/email_reminder
   schedule: every 1 hours

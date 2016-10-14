@@ -84,7 +84,6 @@ class SendEmailHandler(webapp2.RequestHandler):
         )
 
 
-# TODO: This is shit.  I hate it.  need to reconsider how I want this to run.
 class EmailCronJob(webapp2.RequestHandler):
     def get(self):
         """Send reminder email to user regarding unfinished games.  Runs hourly, checks for games without movement for X hours"""
