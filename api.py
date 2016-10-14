@@ -176,7 +176,7 @@ class GuessLocationApi(remote.Service):
         response_message=forms.QuestionResponseForm,
         path='submit_question_guess',
         name='submit_question_guess',
-        http_method='POST'
+        http_method='PUT'
     )
     def submit_question_guess(self, request):
         """Submit question and guess. Updates CityQuestion, Game, Score.
@@ -245,7 +245,7 @@ class GuessLocationApi(remote.Service):
         response_message=forms.GameForm,
         path='cancel_game',
         name='cancel_game',
-        http_method='POST'
+        http_method='PUT'
     )
     def cancel_game(self, request):
         """Cancels game in progress
