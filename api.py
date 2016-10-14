@@ -18,7 +18,7 @@ import models
 import game_logic as gl
 import utils
 import forms
-from settings import *
+from settings import WEB_CLIENT_ID
 
 # Ensures all characters can be handled (foreign language covered)
 import sys
@@ -160,7 +160,7 @@ class GuessLocationApi(remote.Service):
         game = utils.get_by_urlsafe(request.urlsafe_game_key, models.Game)
 
         if game.game_over:
-            raise endpoints.BadRequestException('Game is already over!  Try another one!')
+            raise endpoints.ForbiddenException('Game is already over!  Try another one!')
 
         if game.active_question:
             question = game.active_question.get()
@@ -254,7 +254,7 @@ class GuessLocationApi(remote.Service):
         game = utils.get_by_urlsafe(request.urlsafe_game_key, models.Game)
 
         if game.game_over:
-            return game.to_form('Game is already over!')
+            raise endpoints.ForbiddenException('Illegal action: Game is already over.')
 
         if game.active_question:
             game.end_question_update()
