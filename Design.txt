@@ -2,30 +2,57 @@
 
 ## Designing the game itself.
 
-I wanted to build a more ambitious project than was proposed, but not so ambitious as to be overwhelming at take a ridiculously long time.  The 'guess the city location' idea seemed like a good compromise.  That said, the amount of logic I needed to consider was significantly greater than the guess a number game, and I realized early on I needed to think through the high level and low level details of how this app would work.
+I wanted to build a more ambitious project than was proposed, but not so
+ambitious as to be overwhelming at take a ridiculously long time.  The 'guess
+the city location' idea seemed like a good compromise.  That said, the amount of logic I needed to consider was significantly greater than the guess a
+number game, and I realized early on I needed to think through the high level
+and low level details of how this app would work.
 
-I recorded my thoughts in evernote, sketching out the high level logic flow without worrying too much about how each function would provide and manipulate each piece of information.  I then also went way deeper and thought about the specific details of each piece of data I would want to track, store, and change.
+I recorded my thoughts in evernote, sketching out the high level logic flow
+without worrying too much about how each function would provide and manipulate
+each piece of information. I then also went way deeper and thought about the
+details of each piece of data I would want to track, store, and change.
 
-Whenever I was coming to another tricky piece of logic that I'd need to devise an algorithm for, I sketched it out either in pseudo-code or in an interactive shell, trying to make sure I was able to make the changes I wanted to.
+Whenever I was coming to another tricky piece of logic that I'd need to devise
+an algorithm for, I sketched it out either in pseudo-code or in an interactive
+shell, trying to make sure I was able to make the changes I wanted to.
 
-Between these methods, I was able to come up with a fairly comprehensive vision for how this project needed to be built.
+Between these methods, I was able to come up with a fairly comprehensive
+vision for how this project needed to be built.
 
 I eventually started tracking all features in Asana so I wouldn't forget.
 
 
 ## Structuring the project, modules, methods.
 
-When I first started implementing, I knew that I wanted to maintain a separation of concerns.  The models module should contain the models and nothing else.  The game_logic module should contain the score keeping, game move checking, etc.  And the api module obviously contained the endpoints.
+When I first started implementing, I knew that I wanted to maintain a
+separation of concerns.  The models module should contain the models and
+nothing else.  The game_logic module should contain the score keeping, game
+move checking, etc.  And the api module obviously contained the endpoints.
 
-The theory was great, until I actually started executing.  I got sloppy about what kind of logic lived where, where I handled error checking, how I made changes to entities, etc.  I had to continuously review my code to ensure I was writing clear and consistent code, that each module, class, and method behaved in a way that was consistent throughout the project.
+The theory was great, until I actually started executing.  I got sloppy about
+what kind of logic lived where, where I handled error checking, how I made
+changes to entities, etc.  I had to continuously review my code to ensure I
+was writing clear and consistent code, that each module, class, and method
+behaved in a way that was consistent throughout the project.
 
-All error handling for bad input is handled at the API endpoints level.  All model manipulation is done as part of either the class or object method for the models.  And so on.
+All error handling for bad input is handled at the API endpoints level.  All
+model manipulation is done as part of either the class or object method for
+the models.  And so on.
 
 
 ## Trying it out
 
-I knew when I started that I'd want to write a prototype front end in order to actually play and dispaly this game.  It took me almost a week before I even wrote the index.html, and all that time I had serious questions about whether this game would be fun at all.
+I knew when I started that I'd want to write a prototype front end in order to
+actually play and dispaly this game.  It took me almost a week before I even
+wrote the index.html, and all that time I had serious questions about whether
+this game would be fun at all.
 
-Even after I got it up and running (especially since the UX is awful, and it's all placeholder), I wasn't too confident.  But I was able to put it into a few people's hands, and the feedback was great.  It's obviously a work in progress, but the core functionality and gameplay basically works.
+Even after I got it up and running (especially since the UX is awful, and it's
+all placeholder), I wasn't too confident.  But I was able to put it into a few
+people's hands, and the feedback was great.  It's obviously a work in
+progress, but the core functionality and gameplay basically works.
 
-Overall, this was a really satisfying project, and I'm looking forward to releasing a full 1.0 version of this project with FB and G+ login and sharing, a new front end app, and improved content.
+Overall, this was a really satisfying project, and I'm looking forward to
+releasing a full 1.0 version of this project with FB and G+ login and sharing,
+a new front end app, and improved content.
