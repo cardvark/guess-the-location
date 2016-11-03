@@ -141,3 +141,8 @@ class GameHistoryForm(messages.Message):
     bonus_modifier = messages.FloatField(5)
     bonus_score = messages.IntegerField(6)
     game_over = messages.BooleanField(7)
+
+
+class RegionsForm(messages.Message):
+    """RegionsForm -- List of possible regions"""
+    regions = messages.StringField(1, repeated=True)

@@ -149,6 +149,50 @@ class GuessLocationApi(remote.Service):
     @endpoints.method(
         request_message=GAME_KEY_GET_CONTAINER,
         response_message=forms.QuestionResponseForm,
+        path='get_active_question',
+        name='get_active_question',
+        http_method='GET'
+    )
+    def get_active_question(self, request):
+        """Request active question for a game.  Returns error if no active question."""
+        game = utils.get_by_urlsafe(request.urlsafe_game_key, models.Game)
+
+        if game.game_over:
+            raise endpoints.ForbiddenException('Game is already over!  Try another one!')
+
+        if not game.active_question:
+            raise endpoints.BadRequestException('No active game!')
+
+        question = game.active_question.get()
+        message = 'Active question found!'
+
+        return self._evaluate_question_response_form(question, message)
+
+    @endpoints.method(
+        request_message=GAME_KEY_GET_CONTAINER,
+        response_message=forms.QuestionResponseForm,
+        path='create_new_question',
+        name='create_new_question',
+        http_method='POST'
+    )
+    def create_new_question(self, request):
+        """Request new question for a game.  Returns error if active question exists."""
+        game = utils.get_by_urlsafe(request.urlsafe_game_key, models.Game)
+
+        if game.game_over:
+            raise endpoints.ForbiddenException('Game is already over!  Try another one!')
+
+        if game.active_question:
+            raise endpoints.BadRequestException('Game already has active question in progress!')
+
+        message = 'New question!  Good luck!'
+        question = gl.get_new_city_question(game)
+
+        return self._evaluate_question_response_form(question, message)
+
+    @endpoints.method(
+        request_message=GAME_KEY_GET_CONTAINER,
+        response_message=forms.QuestionResponseForm,
         path='get_question',
         name='get_question',
         http_method='PUT'
@@ -262,6 +306,22 @@ class GuessLocationApi(remote.Service):
         game.end_game()
 
         return game.to_form('Game canceled.')
+
+    @endpoints.method(
+        request_message=message_types.VoidMessage,
+        response_message=forms.RegionsForm,
+        path='get_regions_list',
+        name='get_regions_list',
+        http_method='GET'
+    )
+    def get_regions_list(self, request):
+        """Request unique list of regions for all cities"""
+        regions = models.City.get_available_regions()
+
+        if not regions:
+            raise endpoints.NotFoundException('No regions to choose from!')
+
+        return forms.RegionsForm(regions=regions)
 
     # TODO: possibly use memcache.
     @endpoints.method(
