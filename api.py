@@ -198,8 +198,7 @@ class GuessLocationApi(remote.Service):
         http_method='PUT'
     )
     def get_question(self, request):
-        """Request question for a game.  Returns active or next question.
-        :param request: urlsafe_game_key
+        """Deprecated; use create_new_question and get_active_question.
         """
         game = utils.get_by_urlsafe(request.urlsafe_game_key, models.Game)
 
