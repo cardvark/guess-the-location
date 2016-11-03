@@ -150,36 +150,6 @@ Please note that the front end was built as a proof of concept for the game, not
   * Checks if game has active question, returns error if false.
   * Returns active CityQuestion entity.
 
-#### get_question
-* Path: 'get_question'
-* Method: 'PUT'
-* Request parameters:
-  *  urlsafe_game_key -- string, required.  Game key in websafe format.
-* Response properties in QuestionResponseForm:
-  * Full list of properties depends on question status.  Attempts remaining on a question dictates how much information is passed.
-  * Note: Monument information is generated via Foursquare API.
-  * message -- string.  Server generated message based on whether question is new or active.
-  * Default (new question):
-    * urlsafe_city_key -- string.  CityQuestion key in websafe format.
-    * min_zoom -- integer.  # of questions remaining determines how far a user may zoom out.
-    * attempts_remaining -- integer. # of guess attempts left to answer the question.
-    * message -- string.  server generated message.
-    * lat -- float.  Location latitude
-    * lng -- float.  Location longitude
-  * 2 attempts remaining.  Above items, plus:
-    * img_prefix -- string.  Monument image url prefix.
-    * img_suffix -- string.  Monument image url suffix.
-      * Note: these two items can be tied together by the client by adding image dimensions between img_prefix and img_suffix.f
-      * E.g., img_prefix + '200x200' + img_suffix generates a link to the 200x200 image of the monument.
-  * 1 attempt remaining.  Above items, plus:
-    * name -- string.  Monument name.
-  * 0 attempts remaining.  Above items, plus:
-    * url -- string.  link to Foursquare page.
-* Description:
-  * Checks if game is valid and has questions remaining.
-  * Obtains active question if it exists.
-  * Otherwise creates and returns a new CityQuestion entity.
-
 #### submit_question_guess
 * Path: 'submit_question_guess'
 * Method: 'PUT'
