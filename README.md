@@ -72,6 +72,16 @@ Please note that the front end was built as a proof of concept for the game, not
 * Description:
   * Generates new User entity.
   * Required to create new games.
+  
+#### get_regions_list
+* Path: 'get_regions_list'
+* Method: 'GET'
+* Request parameters:
+  * None
+* Response properties in RegionsForm
+  * regions -- string, repeated.  List of available regions to choose from.
+* Description:
+  * Retrieves list of available regions; necessary information for creation of new games.
 
 #### new_game
 * Path: 'game'
@@ -89,6 +99,56 @@ Please note that the front end was built as a proof of concept for the game, not
   * game_over -- boolean.  Returns game_over status (default to FalsE) from Game entity.  Can be changed when final question is answered, or game is canceled.
 * Description:
   * Creates new Game entity.
+
+#### create_new_question
+* Path: 'create_new_question'
+* Method: 'POST'
+* request parameters:
+  *  urlsafe_game_key -- string, required.  Game key in websafe format.
+* Response properties in QuestionResponseForm:
+  * Note: Monument information is generated via Foursquare API.
+  * message -- string.  Server generated message indicating successful creation of new question.
+  * New question values:
+    * urlsafe_city_key -- string.  CityQuestion key in websafe format.
+    * min_zoom -- integer.  # of questions remaining determines how far a user may zoom out.
+    * attempts_remaining -- integer. # of guess attempts left to answer the question.
+    * message -- string.  server generated message.
+    * lat -- float.  Location latitude
+    * lng -- float.  Location longitude
+* Description:
+  * Checks if game is valid and has questions remaining.
+  * Checks if game has active question, returns error if true.
+  * Creates and returns a new CityQuestion entity.
+  
+#### get_active_question
+* Path: 'get_active_question'
+* Method: 'GET'
+* request parameters:
+  *  urlsafe_game_key -- string, required.  Game key in websafe format.
+* Response properties in QuestionResponseForm:
+  * Full list of properties depends on question status.  Attempts remaining on a question dictates how much information is passed.
+  * Note: Monument information is generated via Foursquare API.
+  * message -- string.  Server generated message indicating successful retrieval of active question.
+  * Default (No guesses made, same as with new question):
+    * urlsafe_city_key -- string.  CityQuestion key in websafe format.
+    * min_zoom -- integer.  # of questions remaining determines how far a user may zoom out.
+    * attempts_remaining -- integer. # of guess attempts left to answer the question.
+    * message -- string.  server generated message.
+    * lat -- float.  Location latitude
+    * lng -- float.  Location longitude
+  * 2 attempts remaining.  Above items, plus:
+    * img_prefix -- string.  Monument image url prefix.
+    * img_suffix -- string.  Monument image url suffix.
+      * Note: these two items can be tied together by the client by adding image dimensions between img_prefix and img_suffix.f
+      * E.g., img_prefix + '200x200' + img_suffix generates a link to the 200x200 image of the monument.
+  * 1 attempt remaining.  Above items, plus:
+    * name -- string.  Monument name.
+  * 0 attempts remaining.  Above items, plus:
+    * url -- string.  link to Foursquare page.
+* Description:
+  * Checks if game is valid and has questions remaining.
+  * Checks if game has active question, returns error if false.
+  * Returns active CityQuestion entity.
 
 #### get_question
 * Path: 'get_question'
