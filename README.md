@@ -55,7 +55,10 @@ Please note that the front end was built as a proof of concept for the game, not
 
 ## API
 ### Overview
-Took parts of the FSND design a game skeleton and rewrote, heavily modified, and substantially extended the project.
+* Substantially modified and extended the [Udacity Design a Game skeleton](https://github.com/udacity/FSND-P4-Design-A-Game/tree/master/Skeleton%20Project%20Guess-a-Number)
+* Base url for requests: https://guess-the-location.appspot.com/_ah/api/guess_the_location/v1/
+* Link to [Google API Explorer](https://guess-the-location.appspot.com/_ah/api/explorer)
+
 ### Endpoints:
 #### create_user
 * Path: 'user'
